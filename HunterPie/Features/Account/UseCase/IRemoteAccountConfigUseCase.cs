@@ -4,6 +4,6 @@ namespace HunterPie.Features.Account.UseCase;
 
 internal interface IRemoteAccountConfigUseCase
 {
-    Task Upload();
-    Task Download();
+    Task UploadAsync();
+    Task DownloadAsync();
 }

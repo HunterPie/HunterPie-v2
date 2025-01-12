@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HunterPie.Features.Analytics.Strategies;
 
-internal class CrashEventStrategy : IAnalyticsStrategy<CrashPayload>
+internal class CrashEventStrategy : IAnalyticsStrategy
 {
     private readonly PoogieReportConnector _connector;
 
@@ -17,18 +17,21 @@ internal class CrashEventStrategy : IAnalyticsStrategy<CrashPayload>
 
     public bool CanHandle(Type type) => type == typeof(CrashPayload);
 
-    public async Task SendAsync(CrashPayload analyticsEvent)
+    public async Task SendAsync(IAnalyticsEvent analyticsEvent)
     {
+        if (analyticsEvent is not CrashPayload payload)
+            return;
+
         var request = new CrashReportRequest(
-            Version: analyticsEvent.Version,
-            GameBuild: analyticsEvent.GameBuild ?? "Unknown",
-            Exception: analyticsEvent.Error,
-            Stacktrace: analyticsEvent.Stacktrace,
-            IsUiError: analyticsEvent.IsUiError,
+            Version: payload.Version,
+            GameBuild: payload.GameBuild ?? "Unknown",
+            Exception: payload.Error,
+            Stacktrace: payload.Stacktrace,
+            IsUiError: payload.IsUiError,
             Context: new CrashReportContextRequest(
-                RamTotal: analyticsEvent.Context.TotalSystemMemory,
-                RamUsed: analyticsEvent.Context.AllocatedMemory,
-                WindowsVersion: analyticsEvent.Context.WindowsVersion
+                RamTotal: payload.Context.TotalSystemMemory,
+                RamUsed: payload.Context.AllocatedMemory,
+                WindowsVersion: payload.Context.WindowsVersion
             )
         );
 

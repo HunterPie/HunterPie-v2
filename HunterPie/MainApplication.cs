@@ -56,7 +56,7 @@ internal class MainApplication
 
     public async Task Restart()
     {
-        await _remoteAccountConfigUseCase.Upload();
+        await _remoteAccountConfigUseCase.UploadAsync();
 
         string executablePath = typeof(MainApplication).Assembly.Location.Replace(".dll", ".exe");
         Process.Start(executablePath);

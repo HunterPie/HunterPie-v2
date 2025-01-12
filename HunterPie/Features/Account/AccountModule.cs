@@ -13,10 +13,10 @@ internal class AccountModule : IDependencyModule
     {
         registry
             .WithSingle<AccountService>()
+            .WithSingle<AccountConfig>()
             .WithSingle<RemoteAccountConfigService>()
             .WithSingle<RemoteConfigSyncService>()
             .WithSingle<AccountController>()
-            .WithSingle<MainApplication>()
             .WithSingle<LocalAccountConfig>();
 
         registry

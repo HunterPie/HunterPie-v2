@@ -136,7 +136,7 @@ internal class AccountService : IAccountUseCase, IEventDispatcher
     {
         var notificationOptions = new NotificationOptions(
             Type: NotificationType.InProgress,
-            Title: "Upload",
+            Title: "UploadAsync",
             Description: "Uploading profile picture...",
             DisplayTime: TimeSpan.FromSeconds(10)
         );

@@ -14,13 +14,14 @@ internal class LocalAccountConfig
 
     private const string ACCOUNT_CONFIG = @"internal\account_config.json";
 
-    private LocalAccountConfig(
+    public LocalAccountConfig(
         AccountConfig accountConfig,
         IAccountUseCase accountUseCase
     )
     {
         _accountConfig = accountConfig;
         _accountUseCase = accountUseCase;
+        RegisterConfiguration();
     }
 
     private void RegisterConfiguration()

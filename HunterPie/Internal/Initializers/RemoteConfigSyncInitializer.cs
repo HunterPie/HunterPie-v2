@@ -25,7 +25,7 @@ internal class RemoteConfigSyncInitializer : IInitializer
 
     public async Task Init()
     {
-        await _remoteConfigService.Download();
+        await _remoteConfigService.DownloadAsync();
 
         _configSyncService.Start();
     }

@@ -74,7 +74,7 @@ internal class BackupElementViewModel : ViewModel
 
         var options = new NotificationOptions(
             Type: NotificationType.Success,
-            Title: "Download",
+            Title: "DownloadAsync",
             Description: "Successfully downloaded backup",
             DisplayTime: TimeSpan.FromSeconds(5)
         );

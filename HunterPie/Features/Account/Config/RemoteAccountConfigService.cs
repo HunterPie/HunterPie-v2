@@ -24,7 +24,7 @@ internal class RemoteAccountConfigService : IRemoteAccountConfigUseCase
         _settingsConnector = settingsConnector;
     }
 
-    public async Task Upload()
+    public async Task UploadAsync()
     {
         if (!await _accountUseCase.IsValidSessionAsync())
             return;
@@ -43,7 +43,7 @@ internal class RemoteAccountConfigService : IRemoteAccountConfigUseCase
         Log.Debug("Uploaded config with length {0}", response.Configuration.Length);
     }
 
-    public async Task Download()
+    public async Task DownloadAsync()
     {
         if (!await _accountUseCase.IsValidSessionAsync())
             return;

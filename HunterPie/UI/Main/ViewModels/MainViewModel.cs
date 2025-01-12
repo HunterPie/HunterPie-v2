@@ -26,6 +26,6 @@ internal class MainViewModel : ViewModel
     public async Task GracefulShutdown()
     {
         ConfigManager.SaveAll();
-        await _remoteConfigService.Upload();
+        await _remoteConfigService.UploadAsync();
     }
 }

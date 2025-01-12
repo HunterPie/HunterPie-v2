@@ -40,7 +40,7 @@ internal class RemoteConfigSyncService
 
             _lastUpload = _lastSync;
 
-            await _remoteAccountConfigService.Upload();
+            await _remoteAccountConfigService.UploadAsync();
         }
         catch { }
         finally

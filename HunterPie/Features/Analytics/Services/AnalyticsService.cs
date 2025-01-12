@@ -8,10 +8,10 @@ namespace HunterPie.Features.Analytics.Services;
 
 internal class AnalyticsService : IAnalyticsService
 {
-    private readonly IAnalyticsStrategy<IAnalyticsEvent>[] _strategies;
+    private readonly IAnalyticsStrategy[] _strategies;
 
     public AnalyticsService(
-        IAnalyticsStrategy<IAnalyticsEvent>[] strategies
+        IAnalyticsStrategy[] strategies
     )
     {
         _strategies = strategies;
@@ -19,7 +19,7 @@ internal class AnalyticsService : IAnalyticsService
 
     public async Task SendAsync(IAnalyticsEvent analyticsEvent)
     {
-        IAnalyticsStrategy<IAnalyticsEvent>? strategy =
+        IAnalyticsStrategy? strategy =
             _strategies.FirstOrDefault(it => it.CanHandle(analyticsEvent.GetType()));
 
         if (strategy is null)
