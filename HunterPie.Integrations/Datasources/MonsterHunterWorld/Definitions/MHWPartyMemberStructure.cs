@@ -5,7 +5,7 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 [StructLayout(LayoutKind.Sequential)]
 public struct MHWPartyMemberStructure
 {
-    public long Address;
+    public nint Address;
     public long Unk0;
     public long Ref;
     public long Unk1;

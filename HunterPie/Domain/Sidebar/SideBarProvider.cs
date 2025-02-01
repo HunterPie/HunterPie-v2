@@ -1,16 +1,19 @@
-﻿using HunterPie.Domain.Sidebar.Elements;
+﻿using HunterPie.DI;
+using HunterPie.UI.SideBar.ViewModels;
 
 namespace HunterPie.Domain.Sidebar;
 
 internal static class SideBarProvider
 {
-    public static ISideBarCollection SideBar = new SimpleSideBarBuilder()
-        .WithButton(new ConsoleSideBarViewModel())
-        .WithButton(new SettingsSideBarViewModel())
-        .WithButton(new PatchNotesSideBarViewModel())
-        .WithButton(new QuestStatisticsSideBarViewModel())
-        .WithButton(new DiscordSideBarViewModel())
-        .WithButton(new PatreonSideBarViewModel())
-        .WithButton(new GitHubSideBarViewModel())
-        .Build();
+    public static ISideBarCollection Get(IDependencyRegistry dependency) =>
+        new SimpleSideBarBuilder()
+            .WithButton(dependency.Get<HomeSideBarViewModel>())
+            .WithButton(dependency.Get<ConsoleSideBarViewModel>())
+            .WithButton(dependency.Get<SettingsSideBarViewModel>())
+            .WithButton(dependency.Get<PatchNotesSideBarViewModel>())
+            .WithButton(dependency.Get<QuestStatisticsSideBarViewModel>())
+            .WithButton(dependency.Get<DiscordSideBarViewModel>())
+            .WithButton(dependency.Get<PatreonSideBarViewModel>())
+            .WithButton(dependency.Get<GitHubSideBarViewModel>())
+            .Build();
 }

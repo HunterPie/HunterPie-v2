@@ -1,9 +1,11 @@
 ﻿using HunterPie.Core.Client;
 using HunterPie.Core.Client.Configuration.Overlay;
 using HunterPie.Core.Game.Enums;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.Core.Remote;
 using HunterPie.UI.Architecture;
 using HunterPie.UI.Architecture.Images;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -12,6 +14,8 @@ namespace HunterPie.UI.Overlay.Widgets.Monster.ViewModels;
 
 public class BossMonsterViewModel : ViewModel
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     private string name;
     private string em;
     private double health;
@@ -177,11 +181,18 @@ public class BossMonsterViewModel : ViewModel
         if (File.Exists(imagePath))
             return imagePath;
 
-        imagePath = await ImageMergerService.MergeAsync(
-            imagePath,
-            defaultImagePath,
-            maskPath
-        );
+        try
+        {
+            imagePath = await ImageMergerService.MergeAsync(
+                imagePath,
+                defaultImagePath,
+                maskPath
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning($"Failed to generate Qurio icon, defaulting to non-qurio icon. Error: {ex}");
+        }
 
         return imagePath;
     }

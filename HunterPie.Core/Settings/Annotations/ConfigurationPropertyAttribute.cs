@@ -10,13 +10,13 @@ public class ConfigurationPropertyAttribute : Attribute
 {
     public string Name { get; init; }
     public bool RequiresRestart { get; init; }
-    public GameProcess AvailableGames { get; init; }
+    public GameProcessType AvailableGames { get; init; }
     public string Group { get; init; }
 
     public ConfigurationPropertyAttribute(
         string name,
         bool requiresRestart = false,
-        GameProcess availableGames = GameProcess.All,
+        GameProcessType availableGames = GameProcessType.All,
         string group = CommonConfigurationGroups.MISCELLANEOUS
     )
     {

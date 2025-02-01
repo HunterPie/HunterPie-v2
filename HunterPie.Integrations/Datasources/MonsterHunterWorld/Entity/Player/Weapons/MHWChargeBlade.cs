@@ -1,12 +1,13 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Entity.Player.Skills;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Utils;
 
@@ -152,19 +153,20 @@ public class MHWChargeBlade : MHWMeleeWeapon, IChargeBlade
     }
 
     public MHWChargeBlade(
-        IProcessManager process,
-        ISkillService skillService
-    ) : base(process, skillService, Weapon.ChargeBlade)
+        IGameProcess process,
+        ISkillService skillService,
+        IScanService scanService
+    ) : base(process, scanService, skillService, Weapon.ChargeBlade)
     {
         _skillService = skillService;
     }
 
     [ScannableMethod]
-    private void GetData()
+    private async Task GetData()
     {
-        MHWChargeBladeStructure structure = Memory.Deref<MHWChargeBladeStructure>(
-            AddressMap.GetAbsolute("WEAPON_MECHANICS_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_MECHANICS_OFFSETS")
+        MHWChargeBladeStructure structure = await Memory.DerefAsync<MHWChargeBladeStructure>(
+            address: AddressMap.GetAbsolute("WEAPON_MECHANICS_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_MECHANICS_OFFSETS")
         );
 
         Skill capacityBoost = _skillService.GetSkillBy(69);

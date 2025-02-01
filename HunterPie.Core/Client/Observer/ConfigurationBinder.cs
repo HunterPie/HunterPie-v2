@@ -6,7 +6,6 @@ using System.Reflection;
 
 namespace HunterPie.Core.Client.Observer;
 
-#nullable enable
 public static class ConfigurationBinder
 {
     private static readonly IList CachedEmptyList = Array.Empty<object>();
@@ -53,13 +52,32 @@ public static class ConfigurationBinder
         if (type.IsPrimitive || type.IsEnum || type == typeof(string))
             return;
 
-        if (element is INotifyPropertyChanged observable)
-            BindProperty(observable, propertyChangedHandler, shouldUnbind);
-
-        if (element is INotifyCollectionChanged observableCollection)
+        switch (element)
         {
-            BindCollection(observableCollection, collectionChangedHandler, propertyChangedHandler, shouldUnbind);
-            return;
+            case IDictionary dictionary:
+                {
+                    IEnumerator values = dictionary.Values.GetEnumerator();
+
+                    while (values.MoveNext())
+                    {
+                        if (values.Current is not { })
+                            continue;
+
+                        BindElement(values.Current, propertyChangedHandler, collectionChangedHandler, shouldUnbind);
+                    }
+
+                    return;
+                }
+
+            case INotifyCollectionChanged observableCollection:
+                {
+                    BindCollection(observableCollection, collectionChangedHandler, propertyChangedHandler, shouldUnbind);
+                    return;
+                }
+
+            case INotifyPropertyChanged observable:
+                BindProperty(observable, propertyChangedHandler, shouldUnbind);
+                break;
         }
 
         foreach (PropertyInfo property in type.GetProperties())

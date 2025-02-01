@@ -1,18 +1,20 @@
 using HunterPie.Core.Client;
 using HunterPie.Core.Game;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HunterPie.Features.Native;
 
 internal static class IPCInjectorInitializer
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
     private const string NATIVE_NAME = "HunterPie.Native.dll";
     private const string NATIVE_PATH = "libs/" + NATIVE_NAME;
 
-    public static bool InjectNativeModule(IContext context)
+    public static async Task<bool> InjectNativeModuleAsync(IContext context)
     {
         try
         {
@@ -20,26 +22,26 @@ internal static class IPCInjectorInitializer
 
             if (IsAlreadyInjected(context))
             {
-                Log.Native("HunterPie Native Interface is already running");
+                Logger.Native("HunterPie Native Interface is already running");
                 return false;
             }
 
-            context.Process.Memory.Inject(native);
+            await context.Process.Memory.InjectAsync(native);
 
-            Log.Native("HunterPie Native Interface injected successfully!");
+            Logger.Native("HunterPie Native Interface injected successfully!");
 
             return true;
         }
         catch (Exception ex)
         {
-            Log.Error("Failed to inject HunterPie Native Interface. {0}", ex);
+            Logger.Error($"Failed to inject HunterPie Native Interface. {ex}");
             return false;
         }
     }
 
     private static bool IsAlreadyInjected(IContext context)
     {
-        return context.Process.Process.Modules.Cast<ProcessModule>()
+        return context.Process.SystemProcess.Modules.Cast<ProcessModule>()
             .Any(module => module.ModuleName == NATIVE_NAME);
     }
 }

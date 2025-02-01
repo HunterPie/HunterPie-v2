@@ -1,10 +1,13 @@
-﻿using HunterPie.Core.Game;
+﻿using HunterPie.Core.Extensions;
+using HunterPie.Core.Game;
+using HunterPie.DI;
 using HunterPie.Domain.Interfaces;
-using HunterPie.Features.Backups;
-using HunterPie.Features.Statistics;
+using HunterPie.Features.Backup.Services;
+using HunterPie.Features.Statistics.Services;
 using HunterPie.Game.Rise;
 using HunterPie.Game.World;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,26 +15,39 @@ namespace HunterPie.Features;
 
 internal static class ContextInitializers
 {
-    private static readonly IContextInitializer[] Initializers =
-    {
-        new MHWContextInitializer(),
-        new MHRContextInitializer(),
+    private static readonly List<IContextInitializer> Instances = new();
 
-        new GameSaveBackupService(),
-        new QuestTrackerService(),
+    private static readonly Type[] Initializers =
+    {
+        typeof(MHWContextInitializer),
+        typeof(MHRContextInitializer),
+        typeof(GameSaveBackupService),
+        typeof(QuestTrackerService)
     };
 
-    public static async Task InitializeAsync(Context context)
+    public static Task InitializeAsync(Context context)
     {
-        foreach (IContextInitializer initializer in Initializers)
-            await initializer.InitializeAsync(context).ConfigureAwait(false);
+        if (Instances is not { Count: 0 })
+            throw new Exception("Context has already been initialized");
+
+        Initializers.Select(DependencyContainer.Get)
+            .TryCast<IContextInitializer>()
+            .ForEach(Instances.Add);
+
+        Task[] tasks = Instances.Select(it => it.InitializeAsync(context))
+            .ToArray();
+
+        Task.WaitAll(tasks);
+
+        return Task.CompletedTask;
     }
 
     public static void Dispose()
     {
-        foreach (IDisposable disposable in Initializers.Where(it => it is IDisposable)
-                     .Cast<IDisposable>()
-                     .ToArray())
-            disposable.Dispose();
+        Instances
+            .TryCast<IDisposable>()
+            .DisposeAll();
+
+        Instances.Clear();
     }
 }

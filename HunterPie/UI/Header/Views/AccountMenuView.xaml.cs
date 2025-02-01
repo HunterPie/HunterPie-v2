@@ -90,11 +90,11 @@ public partial class AccountMenuView : UserControl
         vm.OpenAccountDetails();
     }
 
-    private void OnAccountSettingsClick(object sender, RoutedEventArgs e)
+    private async void OnAccountSettingsClick(object sender, RoutedEventArgs e)
     {
         if (DataContext is not AccountMenuViewModel vm)
             return;
 
-        vm.OpenAccountSettings();
+        await vm.OpenAccountSettingsAsync();
     }
 }

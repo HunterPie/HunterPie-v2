@@ -8,7 +8,7 @@ namespace HunterPie.Core.Native.IPC.Handlers.Internal.Damage.Models;
 public struct ResponseDamageMessage
 {
     public IPCMessage Header;
-    public long Target;
+    public nint Target;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
     public EntityDamageData[] Entities;

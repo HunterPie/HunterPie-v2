@@ -8,7 +8,10 @@ using System.Diagnostics;
 
 namespace HunterPie.Core.Client.Configuration.Debug;
 
-[Configuration("DEV_TOOLS_STRING", "ICON_BUG", FeatureFlags.FEATURE_ADVANCED_DEV)]
+[Configuration(name: "DEV_TOOLS_STRING",
+    icon: "ICON_BUG",
+    group: CommonConfigurationGroups.CLIENT,
+    dependsOnFeature: FeatureFlags.FEATURE_ADVANCED_DEV)]
 public class DevelopmentConfig : ISettings
 {
     #region Mocking Settings

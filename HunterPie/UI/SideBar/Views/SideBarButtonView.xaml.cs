@@ -14,11 +14,11 @@ public partial class SideBarButtonView : UserControl
         InitializeComponent();
     }
 
-    private void OnClick(object sender, RoutedEventArgs e)
+    private async void OnClick(object sender, RoutedEventArgs e)
     {
         if (DataContext is not ISideBarViewModel vm)
             return;
 
-        vm.Execute();
+        await vm.ExecuteAsync();
     }
 }

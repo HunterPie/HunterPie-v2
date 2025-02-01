@@ -10,8 +10,10 @@ public class BorderClipConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
-        if (values.Length != 4 || values[0] is not double width || values[1] is not double height ||
-            values[2] is not CornerRadius radius || values[3] is not Thickness borderThickness)
+        if (values.Length != 3
+            || values[0] is not double width
+            || values[1] is not double height
+            || values[2] is not CornerRadius radius)
             return DependencyProperty.UnsetValue;
 
         if (width < double.Epsilon || height < double.Epsilon)
@@ -19,8 +21,8 @@ public class BorderClipConverter : IMultiValueConverter
 
         var clip = new RectangleGeometry(
             new Rect(0, 0, width, height),
-            radius.TopLeft + borderThickness.Top,
-            radius.TopLeft + borderThickness.Left
+            radius.TopLeft * 0.9,
+            radius.TopLeft * 0.9
         );
         clip.Freeze();
 

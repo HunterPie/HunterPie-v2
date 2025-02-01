@@ -12,7 +12,7 @@ public struct MHRQuestStructure
     /// <summary>
     /// Pointer to the current quest data structure <see cref="MHRQuestDataStructure"/>
     /// </summary>
-    [FieldOffset(0x118)] public long QuestDataPointer;
+    [FieldOffset(0x118)] public IntPtr QuestDataPointer;
 
     [FieldOffset(0x120)]
     [MarshalAs(UnmanagedType.I4)] public QuestType Type;

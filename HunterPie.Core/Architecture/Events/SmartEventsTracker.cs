@@ -1,4 +1,4 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +6,7 @@ namespace HunterPie.Core.Architecture.Events;
 #nullable enable
 public class SmartEventsTracker
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
     private static SmartEventsTracker? _instance;
     public static SmartEventsTracker Instance => _instance ??= new SmartEventsTracker();
 
@@ -33,7 +34,7 @@ public class SmartEventsTracker
         {
             if (@event.References.Any())
                 @event.References.ToList().ForEach(reference =>
-                        Log.Warn(
+                        Logger.Warning(
                         $"Detected dangling event reference at {reference.DeclaringType?.FullName ?? "unknown"}::{reference.Name}"
                         )
                     );

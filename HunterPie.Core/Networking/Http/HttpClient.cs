@@ -1,4 +1,4 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +8,9 @@ using InternalHttpClient = System.Net.Http.HttpClient;
 
 namespace HunterPie.Core.Networking.Http;
 
-#nullable enable
 public class HttpClient : IDisposable
 {
-
+    private readonly ILogger _logger = LoggerFactory.Create();
     private InternalHttpClient? _httpClient;
     private HttpRequestMessage? _request;
 
@@ -28,7 +27,7 @@ public class HttpClient : IDisposable
     {
         foreach (string host in Urls)
         {
-            Log.Debug($"Making request to {Path}");
+            _logger.Debug($"Making request to {Path}");
             for (int retry = 0; retry < Math.Max(1, Retry); retry++)
             {
                 _httpClient = new() { Timeout = TimeOut };
@@ -50,7 +49,7 @@ public class HttpClient : IDisposable
                 }
                 catch (Exception err)
                 {
-                    Log.Debug(err.ToString());
+                    _logger.Debug(err.ToString());
                     _httpClient.Dispose();
                     _request.Dispose();
 
@@ -69,7 +68,7 @@ public class HttpClient : IDisposable
     {
         foreach (string host in Urls)
         {
-            Log.Debug($"Making request to {Path}");
+            _logger.Debug($"Making request to {Path}");
             for (int retry = 0; retry < Math.Max(1, Retry); retry++)
             {
                 _httpClient = new() { Timeout = TimeOut };
@@ -91,7 +90,7 @@ public class HttpClient : IDisposable
                 }
                 catch (Exception err)
                 {
-                    Log.Debug(err.ToString());
+                    _logger.Debug(err.ToString());
                     _httpClient.Dispose();
                     _request.Dispose();
 

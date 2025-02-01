@@ -1,7 +1,8 @@
 ﻿using HunterPie.Core.Base64;
 using HunterPie.Core.Client;
 using HunterPie.Core.Json;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
+using HunterPie.Features.Account.UseCase;
 using HunterPie.Integrations.Poogie.Common.Models;
 using HunterPie.Integrations.Poogie.Settings;
 using HunterPie.Integrations.Poogie.Settings.Models;
@@ -9,35 +10,47 @@ using System.Threading.Tasks;
 
 namespace HunterPie.Features.Account.Config;
 
-#nullable enable
-internal class RemoteAccountConfigService
+internal class RemoteAccountConfigService : IRemoteAccountConfigUseCase
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
 
-    private readonly PoogieClientSettingsConnector _settingsConnector = new();
+    private readonly IAccountUseCase _accountUseCase;
+    private readonly PoogieClientSettingsConnector _settingsConnector;
 
-    public async Task UploadClientConfig()
+    public RemoteAccountConfigService(
+        IAccountUseCase accountUseCase,
+        PoogieClientSettingsConnector settingsConnector
+    )
     {
-        if (!AccountManager.IsLoggedIn())
+        _accountUseCase = accountUseCase;
+        _settingsConnector = settingsConnector;
+    }
+
+    public async Task Upload()
+    {
+        if (!await _accountUseCase.IsValidSessionAsync())
             return;
 
         IAbstractHunterPieConfig config = ClientConfig.Config;
         string serializedConfig = JsonProvider.Serializer(config);
         string encodedConfig = Base64Service.Encode(serializedConfig);
 
-        PoogieResult<ClientSettingsResponse> result = await _settingsConnector.UploadClientSettings(new ClientSettingsRequest(encodedConfig));
+        PoogieResult<ClientSettingsResponse> result = await _settingsConnector.UploadClientSettingsAsync(
+            request: new ClientSettingsRequest(encodedConfig)
+        );
 
         if (result.Response is not { } response)
             return;
 
-        Log.Debug("Uploaded config with length {0}", response.Configuration.Length);
+        _logger.Debug($"Uploaded config with length {response.Configuration.Length}");
     }
 
-    public async Task FetchClientConfig()
+    public async Task Download()
     {
-        if (!AccountManager.IsLoggedIn())
+        if (!await _accountUseCase.IsValidSessionAsync())
             return;
 
-        PoogieResult<ClientSettingsResponse> result = await _settingsConnector.GetClientSettings();
+        PoogieResult<ClientSettingsResponse> result = await _settingsConnector.GetClientSettingsAsync();
 
         if (result.Response is not { } response)
             return;
@@ -49,8 +62,8 @@ internal class RemoteAccountConfigService
         object config = JsonProvider.Deserializer(decodedConfig, ClientConfig.Config.GetType());
 
         ConfigHelper.WriteObject(
-            ConfigHelper.GetFullPath(ClientConfig.CONFIG_NAME),
-            config
+            path: ConfigHelper.GetFullPath(ClientConfig.CONFIG_NAME),
+            obj: config
         );
     }
 }

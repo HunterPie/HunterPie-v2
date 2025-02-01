@@ -6,7 +6,10 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("OVERLAY_STRING", "ICON_OVERLAY")]
+[Configuration(
+    name: "OVERLAY_STRING",
+    icon: "ICON_OVERLAY",
+    group: CommonConfigurationGroups.OVERLAY)]
 public class OverlayClientConfig : ISettings
 {
     #region General Settings

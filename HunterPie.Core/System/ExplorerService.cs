@@ -1,4 +1,4 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
 using System;
 using System.IO;
 
@@ -6,6 +6,7 @@ namespace HunterPie.Core.System;
 
 public static class ExplorerService
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
 
     public static void Delete(string path, bool recursively)
     {
@@ -15,7 +16,7 @@ public static class ExplorerService
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            Logger.Error(err.ToString());
         }
     }
 
@@ -27,7 +28,7 @@ public static class ExplorerService
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            Logger.Error(err.ToString());
         }
     }
 }

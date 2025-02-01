@@ -1,8 +1,8 @@
 ﻿using HunterPie.Core.Domain.Interfaces;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Json;
-using HunterPie.Core.Logger;
 using HunterPie.Core.Networking.Http.Events;
+using HunterPie.Core.Observability.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -14,6 +14,7 @@ namespace HunterPie.Core.Networking.Http;
 #nullable enable
 public class HttpClientResponse : IEventDispatcher, IDisposable
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
     private readonly HttpResponseMessage? _response;
 
     public HttpStatusCode? StatusCode { get; }
@@ -51,7 +52,7 @@ public class HttpClientResponse : IEventDispatcher, IDisposable
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            _logger.Error(err.ToString());
             return default;
         }
     }
@@ -102,7 +103,7 @@ public class HttpClientResponse : IEventDispatcher, IDisposable
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            _logger.Error(err.ToString());
         }
     }
 

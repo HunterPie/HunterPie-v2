@@ -1,12 +1,13 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Entity.Player.Skills;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Utils;
 
@@ -109,12 +110,20 @@ public sealed class MHWSwitchAxe : MHWMeleeWeapon, ISwitchAxe
     }
     #endregion
 
-    [ScannableMethod]
-    private void GetData()
+    public MHWSwitchAxe(
+        IGameProcess process,
+        ISkillService skillService,
+        IScanService scanService) : base(process, scanService, skillService, Weapon.SwitchAxe)
     {
-        MHWSwitchAxeStructure structure = Memory.Deref<MHWSwitchAxeStructure>(
-            AddressMap.GetAbsolute("WEAPON_MECHANICS_ADDRESS"),
-            AddressMap.GetOffsets("WEAPON_MECHANICS_OFFSETS")
+        _skillService = skillService;
+    }
+
+    [ScannableMethod]
+    private async Task GetData()
+    {
+        MHWSwitchAxeStructure structure = await Memory.DerefAsync<MHWSwitchAxeStructure>(
+            address: AddressMap.GetAbsolute("WEAPON_MECHANICS_ADDRESS"),
+            offsets: AddressMap.GetOffsets("WEAPON_MECHANICS_OFFSETS")
         );
 
         float powerProlongerMultiplier = _skillService.GetPowerProlongerMultiplier(Weapon.SwitchAxe);
@@ -129,12 +138,12 @@ public sealed class MHWSwitchAxe : MHWMeleeWeapon, ISwitchAxe
     }
 
     [ScannableMethod]
-    private void GetSlamBuff()
+    private async Task GetSlamBuff()
     {
         float powerProlongerMultiplier = _skillService.GetPowerProlongerMultiplier(Weapon.SwitchAxe);
-        MHWSwitchAxeSlamStructure slamBuff = Memory.Deref<MHWSwitchAxeSlamStructure>(
-            AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
-            AddressMap.GetOffsets("ABNORMALITY_OFFSETS")
+        MHWSwitchAxeSlamStructure slamBuff = await Memory.DerefAsync<MHWSwitchAxeSlamStructure>(
+            address: AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
+            offsets: AddressMap.GetOffsets("ABNORMALITY_OFFSETS")
         );
         float slamBuffTimer = slamBuff.IsActive ? slamBuff.Timer : 0.0f;
         float slamBuffTimerAdjusted = slamBuffTimer * powerProlongerMultiplier;
@@ -143,10 +152,7 @@ public sealed class MHWSwitchAxe : MHWMeleeWeapon, ISwitchAxe
         SlamBuffTimer = slamBuffTimerAdjusted;
     }
 
-    public MHWSwitchAxe(IProcessManager process, ISkillService skillService) : base(process, skillService, Weapon.SwitchAxe)
-    {
-        _skillService = skillService;
-    }
+
 
     public override void Dispose()
     {

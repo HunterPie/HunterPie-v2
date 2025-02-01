@@ -13,5 +13,6 @@ public record ConfigurationCategory(
     string Name,
     string Description,
     string Icon,
+    string CategoryGroup,
     ObservableCollection<ConfigurationGroup> Groups
 );

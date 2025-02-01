@@ -2,7 +2,7 @@
 using HunterPie.Core.Client.Configuration.Versions;
 using HunterPie.Core.Domain.Interfaces;
 using HunterPie.Core.Json;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.Domain.Interfaces;
 using HunterPie.Internal.Migrations;
 using Newtonsoft.Json;
@@ -14,9 +14,10 @@ using Config = HunterPie.Core.Client.Configuration.Config;
 
 namespace HunterPie.Internal.Initializers;
 
-#nullable enable
 internal class ClientConfigMigrationInitializer : IInitializer
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     private static readonly Dictionary<int, ISettingsMigrator> _migrators = new()
     {
         { 0, new V2SettingsMigrator() },
@@ -32,7 +33,7 @@ internal class ClientConfigMigrationInitializer : IInitializer
 
         if (versionedConfig is null)
         {
-            Log.Error("config.json was corrupted. Generating a new one...");
+            _logger.Error("config.json was corrupted. Generating a new one...");
             versionedConfig = (IVersionedConfig?)Activator.CreateInstance(ClientConfig.Config.GetType());
         }
 

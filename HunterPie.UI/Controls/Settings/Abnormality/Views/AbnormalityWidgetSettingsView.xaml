@@ -23,14 +23,17 @@
         <presentation:ConfigurationPropertyDataTemplateSelector x:Key="ConfigurationPropertyDataTemplateSelector"/>
         <localPresentation:AbnormalityElementSelectedConverter x:Key="AbnormalityElementSelectedConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:IconResolver x:Key="IconResolver"/>
 
         <!-- Abnormality Container Templates -->
         <DataTemplate x:Key="HeaderTemplate"
                       DataType="{x:Type viewModels:AbnormalityCategoryViewModel}">
             <buttons:TabItem Title="{Binding Name, Mode=OneWay}"
+                             Icon="{Binding Icon, Mode=OneWay, Converter={StaticResource IconResolver}}"
                              Description="{Binding Description, Mode=OneWay}"
-                             Background="{StaticResource GRAY_300}"
-                             FontSize="13"/>
+                             Background="{StaticResource GRAY_200}"
+                             FontSize="13"
+                             Margin="1"/>
         </DataTemplate>
 
         <DataTemplate x:Key="PanelTemplate"
@@ -51,6 +54,7 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type viewModels:AbnormalityElementViewModel}">
                         <local:AbnormalityElementView Click="OnAbnormalityClick"
+                                                      Margin="2"
                                                       Visibility="{Binding IsMatch, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <local:AbnormalityElementView.IsSelected>
                                 <MultiBinding Converter="{StaticResource AbnormalityElementSelectedConverter}">

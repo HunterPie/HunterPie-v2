@@ -1,17 +1,17 @@
 ﻿using HunterPie.Core.Client.Configuration.Enums;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
 
-#nullable enable
 namespace HunterPie.Core.Client.Localization;
 
+[Obsolete("Localization is deprecated, use ILocalizationRepository instead")]
 public class Localization
 {
-
+    private readonly ILogger _logger = LoggerFactory.Create();
     private readonly XmlDocument? document;
     private static Localization? _instance;
 
@@ -36,7 +36,7 @@ public class Localization
 
         if (!File.Exists(xmlPath))
         {
-            Log.Error($"Failed to find {Path.GetFileNameWithoutExtension(xmlPath)} localization");
+            _logger.Error($"Failed to find {Path.GetFileNameWithoutExtension(xmlPath)} localization");
             return;
         }
 
@@ -73,10 +73,10 @@ public class Localization
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            _logger.Error(err.ToString());
         }
 
-        Log.Info($"Loaded localization {Path.GetFileNameWithoutExtension(xmlPath)}");
+        _logger.Info($"Loaded localization {Path.GetFileNameWithoutExtension(xmlPath)}");
     }
 
     private static string GetFullParentPath(XmlNode node, string path = "")
@@ -117,4 +117,3 @@ public class Localization
         return translation?.Attributes?["String"]?.Value;
     }
 }
-#nullable restore

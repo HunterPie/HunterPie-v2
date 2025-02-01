@@ -10,7 +10,7 @@
                        xmlns:effects="clr-namespace:HunterPie.UI.Controls.Effects"
                        mc:Ignorable="d" 
                        d:DesignHeight="25" 
-                       d:DesignWidth="60" 
+                       d:DesignWidth="60"
                        ClipToBounds="True">
     <arch:ClickableControl.Resources>
         <Storyboard x:Key="PART_RippleAnimation" 
@@ -41,36 +41,49 @@
                 </DoubleAnimation.EasingFunction>
             </DoubleAnimation>
         </Storyboard>
-        <converters:RelativeSizeConverter x:Key="RelativeSizeConverter"/>
     </arch:ClickableControl.Resources>
-
-    <Border CornerRadius="{Binding CornerRadius, ElementName=NativeButtonControl}"
-            BorderThickness="{Binding BorderThickness, ElementName=NativeButtonControl}"
-            BorderBrush="{Binding BorderBrush, ElementName=NativeButtonControl}"
-            Background="{Binding Background, ElementName=NativeButtonControl}">
-        <Grid>
-            <Canvas Clip="{Binding Clip, RelativeSource={RelativeSource AncestorType={x:Type Border}}}">
-                <Ellipse x:Name="PART_Ripple"
-                         Fill="#10F5F5F5" 
-                         HorizontalAlignment="Left" 
-                         Height="{Binding Path=Width, RelativeSource={RelativeSource Self}}"
-                         VerticalAlignment="Top"/>
-            </Canvas>
-            <effects:CursorHighLight>
-                <Label Content="{Binding Content, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
-                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
-                       FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                       Padding="{Binding Padding, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
-                       HorizontalContentAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
-                       VerticalContentAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"/>
-            </effects:CursorHighLight>
-        </Grid>
-    </Border>
+    <Grid>
+        <Border CornerRadius="{Binding CornerRadius, ElementName=NativeButtonControl }"
+                BorderThickness="{Binding BorderThickness, ElementName=NativeButtonControl}"
+                BorderBrush="{Binding BorderBrush, ElementName=NativeButtonControl}"
+                Background="{Binding Background, ElementName=NativeButtonControl}">
+            <Grid>
+                <Grid.OpacityMask>
+                    <VisualBrush>
+                        <VisualBrush.Visual>
+                            <Border CornerRadius="{Binding CornerRadius, ElementName=NativeButtonControl}"
+                                    BorderThickness="{Binding BorderThickness, ElementName=NativeButtonControl}"
+                                    BorderBrush="Transparent"
+                                    Background="Black"
+                                    Height="{Binding ActualHeight, ElementName=NativeButtonControl}"
+                                    Width="{Binding ActualWidth, ElementName=NativeButtonControl}"/>
+                        </VisualBrush.Visual>
+                    </VisualBrush>
+                </Grid.OpacityMask>
+                <Canvas>
+                    <Ellipse x:Name="PART_Ripple"
+                             Fill="#10F5F5F5" 
+                             HorizontalAlignment="Left" 
+                             Height="{Binding Path=Width, RelativeSource={RelativeSource Self}}"
+                             VerticalAlignment="Top"/>
+                </Canvas>
+                <effects:CursorHighLight>
+                    <Label Content="{Binding Content, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
+                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
+                           FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                           Padding="{Binding Padding, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
+                           HorizontalContentAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"
+                           VerticalContentAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type local:Button}}}"/>
+                </effects:CursorHighLight>
+            </Grid>
+        </Border>
+    </Grid>
+    
     <arch:ClickableControl.Style>
         <Style TargetType="{x:Type arch:ClickableControl}">
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Opacity" Value="0.2"/>
+                    <Setter Property="Opacity" Value="0.7"/>
                     <Setter Property="Cursor" Value="Hand"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="True">

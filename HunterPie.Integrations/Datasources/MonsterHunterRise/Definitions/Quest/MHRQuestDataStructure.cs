@@ -1,5 +1,4 @@
-﻿using HunterPie.Core.Domain.Process;
-using HunterPie.Core.Extensions;
+﻿using HunterPie.Core.Domain.Memory;
 using HunterPie.Core.Game.Entity.Game.Quest;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Utils;
 using System.Runtime.InteropServices;
@@ -12,19 +11,19 @@ public struct MHRQuestDataStructure
     /// <summary>
     /// Pointer to a normal quest structure <see cref="MHRNormalQuestDataStructure"/>
     /// </summary>
-    [FieldOffset(0x10)] public long NormalQuestPointer;
+    [FieldOffset(0x10)] public IntPtr NormalQuestPointer;
 
     /// <summary>
     /// Pointer to an anomaly quest structure <see cref="MHRAnomalyQuestDataStructure"/>
     /// </summary>
-    [FieldOffset(0x28)] public long AnomalyQuestPointer;
+    [FieldOffset(0x28)] public IntPtr AnomalyQuestPointer;
 
-    public MHRQuestData? GetCurrentQuest(IProcessManager process)
+    public async Task<MHRQuestData?> GetCurrentQuestAsync(IMemoryAsync memory)
     {
-        if (!NormalQuestPointer.IsNullPointer())
+
+        if (NormalQuestPointer != IntPtr.Zero)
         {
-            MHRNormalQuestDataStructure normalQuest =
-                process.Memory.Read<MHRNormalQuestDataStructure>(NormalQuestPointer);
+            MHRNormalQuestDataStructure normalQuest = await memory.ReadAsync<MHRNormalQuestDataStructure>(NormalQuestPointer);
 
             return new MHRQuestData
             {
@@ -34,19 +33,16 @@ public struct MHRQuestDataStructure
             };
         }
 
-        if (!AnomalyQuestPointer.IsNullPointer())
+        if (AnomalyQuestPointer == IntPtr.Zero)
+            return null;
+
+        MHRAnomalyQuestDataStructure anomalyQuest = await memory.ReadAsync<MHRAnomalyQuestDataStructure>(AnomalyQuestPointer);
+
+        return new MHRQuestData
         {
-            MHRAnomalyQuestDataStructure anomalyQuest =
-                process.Memory.Read<MHRAnomalyQuestDataStructure>(AnomalyQuestPointer);
-
-            return new MHRQuestData
-            {
-                Id = anomalyQuest.Id,
-                Level = QuestLevel.Anomaly,
-                Stars = anomalyQuest.Level
-            };
-        }
-
-        return null;
+            Id = anomalyQuest.Id,
+            Level = QuestLevel.Anomaly,
+            Stars = anomalyQuest.Level
+        };
     }
 }

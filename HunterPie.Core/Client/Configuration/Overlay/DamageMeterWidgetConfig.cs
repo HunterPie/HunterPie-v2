@@ -8,7 +8,10 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("METER_WIDGET_STRING", "ICON_METER", availableGames: GameProcess.MonsterHunterWorld | GameProcess.MonsterHunterRise)]
+[Configuration(name: "METER_WIDGET_STRING",
+    icon: "ICON_METER",
+    group: CommonConfigurationGroups.OVERLAY,
+    availableGames: GameProcessType.MonsterHunterWorld | GameProcessType.MonsterHunterRise)]
 public class DamageMeterWidgetConfig : IWidgetSettings, ISettings
 {
     [ConfigurationProperty("INITIALIZE_WIDGET_STRING", requiresRestart: true, group: CommonConfigurationGroups.WIDGET)]
@@ -27,7 +30,7 @@ public class DamageMeterWidgetConfig : IWidgetSettings, ISettings
     [ConfigurationProperty("DAMAGE_METER_ENABLE_SHOULD_BLUR_NAMES", group: CommonConfigurationGroups.CUSTOMIZATIONS)]
     public Observable<bool> ShouldBlurNames { get; set; } = false;
 
-    [ConfigurationProperty("DAMAGE_METER_ENABLE_OTOMOS", group: CommonConfigurationGroups.CUSTOMIZATIONS, availableGames: GameProcess.MonsterHunterRise)]
+    [ConfigurationProperty("DAMAGE_METER_ENABLE_OTOMOS", group: CommonConfigurationGroups.CUSTOMIZATIONS, availableGames: GameProcessType.MonsterHunterRise)]
     public Observable<bool> ShouldShowOtomos { get; set; } = true;
 
     [ConfigurationProperty("DAMAGE_METER_SHOULD_SHOW_DPS", group: CommonConfigurationGroups.CUSTOMIZATIONS)]
@@ -66,7 +69,7 @@ public class DamageMeterWidgetConfig : IWidgetSettings, ISettings
     [ConfigurationProperty("DAMAGE_METER_PLAYER_4_COLOR_STRING", group: CommonConfigurationGroups.COLORS)]
     public Color PlayerFourth { get; set; } = "#FFF0F465";
 
-    [ConfigurationProperty("DAMAGE_METER_NPC_COLOR_STRING", availableGames: GameProcess.MonsterHunterRise, group: CommonConfigurationGroups.COLORS)]
+    [ConfigurationProperty("DAMAGE_METER_NPC_COLOR_STRING", availableGames: GameProcessType.MonsterHunterRise, group: CommonConfigurationGroups.COLORS)]
     public Color NpcColor { get; set; } = "#FF9534EB";
 
     [ConfigurationProperty("WIDGET_POSITION", group: CommonConfigurationGroups.WIDGET)]

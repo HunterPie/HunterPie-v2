@@ -77,7 +77,7 @@ public class MHWSpecializedTool : ISpecializedTool, IEventDispatcher, IUpdatable
         remove => _onChange.Unhook(value);
     }
 
-    void IUpdatable<MHWSpecializedToolStructure>.Update(MHWSpecializedToolStructure data)
+    public void Update(MHWSpecializedToolStructure data)
     {
         Id = data.Id;
         MaxTimer = data.MaxTimer;

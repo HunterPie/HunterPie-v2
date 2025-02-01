@@ -1,21 +1,21 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Game.Entity.Player.Skills;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 
 namespace HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Player;
 
-public class MHWSkillService : Scannable, ISkillService, IDisposable
+public class MHWSkillService : Scannable, ISkillService
 {
     private readonly Skill[] _skills = Enumerable.Repeat(false, 226)
         .Select(_ => new Skill())
         .ToArray();
 
-    public MHWSkillService(IProcessManager process) : base(process)
-    {
-        ScanManager.Add(this);
-    }
+    public MHWSkillService(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService) { }
 
     public Skill GetSkillBy(int id)
     {
@@ -23,21 +23,16 @@ public class MHWSkillService : Scannable, ISkillService, IDisposable
     }
 
     [ScannableMethod]
-    private void GetGearSkills()
+    private async Task GetGearSkills()
     {
-        long gearSkillsPtr = Process.Memory.Read(
-            AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
-            AddressMap.Get<int[]>("GEAR_SKILL_OFFSETS")
+        nint gearSkillsPtr = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("GEAR_SKILL_OFFSETS")
         );
 
-        MHWGearSkill[] skills = Process.Memory.Read<MHWGearSkill>(gearSkillsPtr, 226);
+        MHWGearSkill[] skills = await Memory.ReadAsync<MHWGearSkill>(gearSkillsPtr, 226);
 
         for (int i = 0; i < skills.Length; i++)
             _skills[i].Level = skills[i].LevelGear;
-    }
-
-    public void Dispose()
-    {
-        ScanManager.Remove(this);
     }
 }

@@ -10,7 +10,7 @@ namespace HunterPie.UI.Settings.Converter.Internal;
 #nullable enable
 internal class ColorConfigurationPropertyBuilder : IConfigurationPropertyBuilder
 {
-    public IConfigurationProperty Build(PropertyData data, GameProcess game)
+    public IConfigurationProperty Build(PropertyData data, GameProcessType game)
     {
         if (data.Value is not Color value)
             throw new ArgumentException($"Property must be of type {nameof(Color)}");

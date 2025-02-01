@@ -25,9 +25,9 @@ public static class AbnormalityCategoryViewModelBuilder
     private const string ICON_FOODS = "ICON_DANGO";
     private static readonly ObservableCollection<AbnormalityCategoryViewModel> EmptyCached = new();
 
-    public static ObservableCollection<AbnormalityCategoryViewModel> Build(GameProcess game)
+    public static ObservableCollection<AbnormalityCategoryViewModel> Build(GameProcessType game)
     {
-        GameType? gameType = MapFactory.Map<GameProcess, GameType?>(game);
+        GameType? gameType = MapFactory.Map<GameProcessType, GameType?>(game);
 
         if (gameType is null)
             return EmptyCached;
@@ -36,13 +36,24 @@ public static class AbnormalityCategoryViewModelBuilder
 
         return abnormalities.Select(group =>
         {
+            string groupKey = group.Key.ToUpperInvariant();
             (string categoryName, string categoryDescription) =
-                Localization.Resolve(CATEGORY_PATH.Format(group.Key.ToUpperInvariant()));
+                Localization.Resolve(CATEGORY_PATH.Format(groupKey));
 
             return new AbnormalityCategoryViewModel
             {
                 Name = categoryName,
                 Description = categoryDescription,
+                Icon = groupKey switch
+                {
+                    "SONGS" => ICON_SONGS,
+                    "CONSUMABLES" => ICON_CONSUMABLES,
+                    "DEBUFFS" => ICON_DEBUFFS,
+                    "PALICO" => ICON_PALICO,
+                    "SKILLS" => ICON_SKILLS,
+                    "FOODS" => ICON_FOODS,
+                    _ => null
+                },
                 Elements = group.Select(element =>
                     new AbnormalityElementViewModel
                     {

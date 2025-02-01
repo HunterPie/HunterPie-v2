@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<LangVersion>11.0</LangVersion>
+	<AssemblyVersion>1.0.0.145</AssemblyVersion>
+	<FileVersion>1.0.0.145</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HunterPie.Core\HunterPie.Core.csproj" />
+    <ProjectReference Include="..\HunterPie.DI\HunterPie.DI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Logging\" />
+    <Folder Include="Windows\Memory\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

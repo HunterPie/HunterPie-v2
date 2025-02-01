@@ -12,87 +12,90 @@
              xmlns:native="clr-namespace:HunterPie.UI.Controls.Buttons"
              d:DataContext="{d:DesignInstance Type=viewmodels:TelemetricsViewModel}"
              x:TypeArguments="viewmodels:TelemetricsViewModel"
-             mc:Ignorable="d"
-             BorderBrush="{StaticResource HUNTERPIE_ACCENT_COLOR}"
-             BorderThickness="1">
-    <StackPanel Background="{StaticResource HUNTERPIE_BACKGROUND_DARK}">
-        <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                   Padding="5"
-                   VerticalAlignment="Top">
-            <Run Text="CPU: "
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="{Binding CPU, StringFormat=\{0:F1\}}"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="%"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontWeight="Medium"/>
-        </TextBlock>
-        <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                   Padding="5"
-                   VerticalAlignment="Top">
-            <Run Text="RAM: "
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="{Binding Memory}"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="Mb"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontSize="10"
-                 FontWeight="Light"/>
-        </TextBlock>
-        <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                   Padding="5"
-                   VerticalAlignment="Top">
-            <Run Text="Thread Count: "
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="{Binding Threads}"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
-                 FontWeight="Medium"/>
-        </TextBlock>
-        <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                   Padding="5"
-                   VerticalAlignment="Top">
-            <Run Text="Scan time: "
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="{Binding Value, Mode=OneWay, Source={x:Static core:ScanManager.ScanTime}}"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
-                 FontWeight="Medium"/><!--
-         --><Run Text="μs"
-                 Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                 FontWeight="Medium"/>
-        </TextBlock>
+             mc:Ignorable="d">
+    <Border BorderThickness="1"
+            BorderBrush="{StaticResource GRAY}"
+            CornerRadius="5"
+            Background="{StaticResource HUNTERPIE_BACKGROUND_DARK}">
+        <StackPanel>
+            <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                       Padding="5"
+                       VerticalAlignment="Top">
+                <Run Text="CPU: "
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="{Binding CPU, StringFormat=\{0:F1\}}"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="%"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontWeight="Medium"/>
+            </TextBlock>
+            <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                       Padding="5"
+                       VerticalAlignment="Top">
+                <Run Text="RAM: "
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="{Binding Memory}"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="Mb"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontSize="10"
+                     FontWeight="Light"/>
+            </TextBlock>
+            <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                       Padding="5"
+                       VerticalAlignment="Top">
+                <Run Text="Thread Count: "
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="{Binding Threads}"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
+                     FontWeight="Medium"/>
+            </TextBlock>
+            <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                       Padding="5"
+                       VerticalAlignment="Top">
+                <Run Text="Scan time: "
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="{Binding ScanTime.Value, Mode=OneWay}"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_SECONDARY}"
+                     FontWeight="Medium"/><!--
+             --><Run Text="μs"
+                     Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                     FontWeight="Medium"/>
+            </TextBlock>
 
-        <lvc:CartesianChart Height="100"
-                            Series="{Binding CPUSeries}"
-                            DisableAnimations="True">
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis MinValue="0"
-                          LabelFormatter="{Binding PercentageFormatter}"/>
-            </lvc:CartesianChart.AxisY>
-        </lvc:CartesianChart>
-        <lvc:CartesianChart Height="100"
-                            Series="{Binding RAMSeries}"
-                            DisableAnimations="True">
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis MinValue="0"
-                          LabelFormatter="{Binding BytesFormatter}"/>
-            </lvc:CartesianChart.AxisY>
-        </lvc:CartesianChart>
+            <lvc:CartesianChart Height="100"
+                                Series="{Binding CPUSeries}"
+                                DisableAnimations="True">
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis MinValue="0"
+                              LabelFormatter="{Binding PercentageFormatter}"/>
+                </lvc:CartesianChart.AxisY>
+            </lvc:CartesianChart>
+            <lvc:CartesianChart Height="100"
+                                Series="{Binding RAMSeries}"
+                                DisableAnimations="True">
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis MinValue="0"
+                              LabelFormatter="{Binding BytesFormatter}"/>
+                </lvc:CartesianChart.AxisY>
+            </lvc:CartesianChart>
 
-        <native:Button Content="Execute GC"
-                       OnClick="OnGCClick"/>
+            <native:Button Content="Execute GC"
+                           OnClick="OnGCClick"/>
 
-        <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                   Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
-                   Text="Metrics are updated every 5 seconds."
-                   FontSize="10"
-                   Padding="5"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Top"/>
-    </StackPanel>
+            <TextBlock FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                       Foreground="{StaticResource HUNTERPIE_FOREGROUND_DARK}"
+                       Text="Metrics are updated every 5 seconds."
+                       FontSize="10"
+                       Padding="5"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Top"/>
+        </StackPanel>
+    </Border>
 </arch:View>

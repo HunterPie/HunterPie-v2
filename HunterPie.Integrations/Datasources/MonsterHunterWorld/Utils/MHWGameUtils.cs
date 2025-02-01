@@ -17,11 +17,11 @@ public static class MHWGameUtils
     public const int HandicraftMultiplier = 10;
     public const int MaxHandicraft = 50;
 
-    public static string ReadString(this IMemory memory, long address, uint length)
+    public static async Task<string> ReadStringAsync(this IMemoryAsync memory, nint address, int length)
     {
-        long stringPtr = memory.Read<long>(address);
+        nint stringPtr = await memory.ReadAsync<nint>(address);
 
-        return memory.Read(stringPtr + 0x0C, length);
+        return await memory.ReadAsync(stringPtr + 0x0C, length);
     }
 
     public static float ToSeconds(this uint self) => self / 60.0f;

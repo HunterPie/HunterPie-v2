@@ -1,5 +1,5 @@
 ﻿using HunterPie.Core.Json;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using System;
 using System.IO;
 using System.Text;
@@ -8,6 +8,7 @@ namespace HunterPie.Core.Client;
 
 public static class ConfigHelper
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
     private static readonly object Sync = new();
 
     public static string ReadObject(string path)
@@ -42,7 +43,7 @@ public static class ConfigHelper
             }
             catch (Exception err)
             {
-                Log.Error(err.ToString());
+                Logger.Error(err.ToString());
             }
     }
 

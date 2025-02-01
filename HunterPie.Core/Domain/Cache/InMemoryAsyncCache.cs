@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace HunterPie.Core.Domain.Cache;
 
-#nullable enable
 /// <summary>
 /// A thread safe and asynchronous in-memory cache
 /// </summary>
@@ -15,7 +14,7 @@ public class InMemoryAsyncCache : IAsyncCache
     private readonly SemaphoreSlim _semaphore = new(1);
     private readonly Dictionary<string, ThreadSafeCacheEntry> _innerCache = new(50);
 
-    public async Task<T?> Get<T>(string key)
+    public async Task<T?> GetAsync<T>(string key)
     {
         try
         {
@@ -41,7 +40,7 @@ public class InMemoryAsyncCache : IAsyncCache
         }
     }
 
-    public async Task Set<T>(string key, T value, CacheOptions? options = null)
+    public async Task SetAsync<T>(string key, T value, CacheOptions? options = null) where T : notnull
     {
         options ??= CacheOptions.Default;
 
@@ -50,11 +49,26 @@ public class InMemoryAsyncCache : IAsyncCache
             await _semaphore.WaitAsync();
 
             _innerCache[key] = new ThreadSafeCacheEntry(
-                ExpiresAt: DateTime.UtcNow + options.Ttl,
+                ExpiresAt: options.Ttl == TimeSpan.MaxValue
+                    ? DateTime.MaxValue
+                    : DateTime.UtcNow + options.Ttl,
                 Value: value
             );
         }
-        catch { }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task ClearAsync(string key)
+    {
+        try
+        {
+            await _semaphore.WaitAsync();
+
+            _innerCache.Remove(key);
+        }
         finally
         {
             _semaphore.Release();

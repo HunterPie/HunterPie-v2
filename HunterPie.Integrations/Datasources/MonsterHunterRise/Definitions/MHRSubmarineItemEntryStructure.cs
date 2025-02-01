@@ -8,5 +8,5 @@ public struct MHRSubmarineItemEntryStructure
     /// <summary>
     /// Pointer to <see cref="MHRSubmarineItemStructure"/>
     /// </summary>
-    [FieldOffset(0x20)] public long ItemPointer;
+    [FieldOffset(0x20)] public nint ItemPointer;
 }

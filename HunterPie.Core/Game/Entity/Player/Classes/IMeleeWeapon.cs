@@ -10,7 +10,7 @@ public interface IMeleeWeapon
     public int MaxSharpness { get; }
     public int Threshold { get; }
 
-    public int[] SharpnessThresholds { get; }
+    public int[]? SharpnessThresholds { get; }
 
     public event EventHandler<SharpnessEventArgs> OnSharpnessChange;
     public event EventHandler<SharpnessEventArgs> OnSharpnessLevelChange;

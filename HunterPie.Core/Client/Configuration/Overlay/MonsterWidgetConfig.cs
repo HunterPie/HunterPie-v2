@@ -9,7 +9,9 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("MONSTER_WIDGET_STRING", "ICON_SKULL")]
+[Configuration(name: "MONSTER_WIDGET_STRING",
+    icon: "ICON_SKULL",
+    group: CommonConfigurationGroups.OVERLAY)]
 public class MonsterWidgetConfig : IWidgetSettings, ISettings
 {
     #region General Settings
@@ -84,7 +86,7 @@ public class MonsterWidgetConfig : IWidgetSettings, ISettings
     #endregion
 
     #region Target settings
-    [ConfigurationProperty("MONSTER_WIDGET_TARGET_MODE_STRING", availableGames: GameProcess.MonsterHunterRise | GameProcess.MonsterHunterWorld, group: CommonConfigurationGroups.MONSTER_TARGET)]
+    [ConfigurationProperty("MONSTER_WIDGET_TARGET_MODE_STRING", availableGames: GameProcessType.MonsterHunterRise | GameProcessType.MonsterHunterWorld, group: CommonConfigurationGroups.MONSTER_TARGET)]
     [GameConfigurationAdapter(typeof(TargetModeEnumAdapter))]
     public Observable<TargetModeType> TargetMode { get; set; } = TargetModeType.LockOn;
 

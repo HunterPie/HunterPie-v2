@@ -2,8 +2,8 @@
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Party;
 using HunterPie.Core.Game.Enums;
-using HunterPie.Core.Logger;
 using HunterPie.Core.Native.IPC.Models.Common;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.Integrations.Datasources.Common.Entity.Party;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 
@@ -11,6 +11,8 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterRise.Entity.Party;
 
 public sealed class MHRParty : CommonParty, IUpdatable<EntityDamageData>, IUpdatable<MHRPartyMemberData>
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     private readonly object _syncParty = new();
     private readonly Dictionary<int, MHRPartyMember> _partyMembers = new();
     private readonly Dictionary<int, MHRPartyMember> _partyMemberPets = new()
@@ -100,13 +102,10 @@ public sealed class MHRParty : CommonParty, IUpdatable<EntityDamageData>, IUpdat
         _partyMemberPets.Add(petData.Index, memberPet);
         _partyHashNameLookup.Add(data.GetHash(), member);
 
-        IUpdatable<MHRPartyMemberData> updatable = member;
-        IUpdatable<MHRPartyMemberData> updatablePet = memberPet;
+        member.Update(data);
+        memberPet.Update(petData);
 
-        updatable.Update(data);
-        updatablePet.Update(petData);
-
-        Log.Debug("Added new player to party: id: {0} name: {1} weap: {2}, hash: {3:X}", data.Index, data.Name, data.WeaponId, updatable.GetHashCode());
+        _logger.Debug($"Added new player to party: id: {data.Index} name: {data.Name} weap: {data.WeaponId}, hash: {member.GetHashCode():X}");
 
         this.Dispatch(_onMemberJoin, member);
         this.Dispatch(_onMemberJoin, memberPet);
@@ -128,7 +127,7 @@ public sealed class MHRParty : CommonParty, IUpdatable<EntityDamageData>, IUpdat
             _ = _partyMemberPets.Remove(petIndex);
             _ = _partyHashNameLookup.Remove(member.GetHash());
 
-            Log.Debug("Removed player: id: {0} name: {1} hash: {2:X}", memberIndex, member.Name, member.GetHashCode());
+            _logger.Debug($"Removed player: id: {memberIndex} name: {member.Name} hash: {member.GetHashCode():X}");
 
             this.Dispatch(_onMemberLeave, member);
             this.Dispatch(_onMemberLeave, memberPet);

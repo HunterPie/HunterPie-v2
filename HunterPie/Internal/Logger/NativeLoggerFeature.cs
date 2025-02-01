@@ -1,11 +1,13 @@
 ﻿using HunterPie.Core.Domain.Features.Domain;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 
 namespace HunterPie.Internal.Logger;
 
 internal class NativeLoggerFeature : Feature
 {
-    protected override void OnEnable() => Log.Debug("Enabled feature");
+    private readonly ILogger _logger = LoggerFactory.Create();
 
-    protected override void OnDisable() => Log.Debug("Disabled feature");
+    protected override void OnEnable() => _logger.Debug("Enabled feature");
+
+    protected override void OnDisable() => _logger.Debug("Disabled feature");
 }

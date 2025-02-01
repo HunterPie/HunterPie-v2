@@ -22,43 +22,47 @@
             <DoubleAnimation BeginTime="0:0:1.25" Duration="0:0:0" Storyboard.TargetProperty="Opacity" To="1" />
         </Storyboard>
     </UserControl.Resources>
-    <Grid>
-        <Canvas>
-            <Ellipse x:Name="PART_Ripple"
-                    Fill="#40F5F5F5" 
-                    HorizontalAlignment="Left" 
-                    Height="{Binding Path=Width, RelativeSource={RelativeSource Self}}"
-                    VerticalAlignment="Top"/>
-        </Canvas>
+    <Border BorderBrush="{StaticResource GRAY}"
+            BorderThickness="1"
+            CornerRadius="5">
+        <Grid>
+            <Canvas>
+                <Ellipse x:Name="PART_Ripple"
+                         Fill="#40F5F5F5" 
+                         HorizontalAlignment="Left" 
+                         Height="{Binding Path=Width, RelativeSource={RelativeSource Self}}"
+                         VerticalAlignment="Top"/>
+            </Canvas>
 
-        <effects:CursorHighLight>
-            <Grid Margin="10,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="30"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
+            <effects:CursorHighLight>
+                <Grid Margin="10,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
 
-                <Rectangle Grid.Column="0" 
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"
-                           Width="20"
-                           Height="{Binding Width, RelativeSource={RelativeSource Self}}"
-                           Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type local:TabItem}}}">
-                    <Rectangle.OpacityMask>
-                        <ImageBrush d:ImageSource="{StaticResource ICON_DISCORD}"
-                                    ImageSource="{Binding Icon, RelativeSource={RelativeSource AncestorType={x:Type local:TabItem}}}"
-                                    TileMode="Tile" 
-                                    Stretch="Uniform"/>
-                    </Rectangle.OpacityMask>
-                </Rectangle>
+                    <Rectangle Grid.Column="0" 
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch"
+                               Width="20"
+                               Height="{Binding Width, RelativeSource={RelativeSource Self}}"
+                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type local:TabItem}}}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush d:ImageSource="{StaticResource ICON_DISCORD}"
+                                        ImageSource="{Binding Icon, RelativeSource={RelativeSource AncestorType={x:Type local:TabItem}}}"
+                                        TileMode="Tile" 
+                                        Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
 
-                <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:TabItem}}}"
-                           Grid.Column="1"
-                           Margin="10,0,0,0"
-                           FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
-                           FontWeight="Medium"
-                           VerticalAlignment="Center"/>
-            </Grid>
-        </effects:CursorHighLight>
-    </Grid>
+                    <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType={x:Type local:TabItem}}}"
+                               Grid.Column="1"
+                               Margin="10,0,0,0"
+                               FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </effects:CursorHighLight>
+        </Grid>
+    </Border>
 </UserControl>

@@ -18,11 +18,11 @@ namespace HunterPie.UI.Controls.Settings.Monsters.Builders;
 public static class MonsterPartsViewModelBuilder
 {
     public static MonsterConfigurationViewModel[] Build(
-        GameProcess game,
+        GameProcessType game,
         ICollection<MonsterConfiguration> configurations
     )
     {
-        GameType? gameType = MapFactory.Map<GameProcess, GameType?>(game);
+        GameType? gameType = MapFactory.Map<GameProcessType, GameType?>(game);
 
         if (gameType is not { })
             return Array.Empty<MonsterConfigurationViewModel>();

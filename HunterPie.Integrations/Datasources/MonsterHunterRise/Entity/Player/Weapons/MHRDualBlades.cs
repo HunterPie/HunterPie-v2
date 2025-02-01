@@ -1,11 +1,13 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
+using HunterPie.Core.Utils;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Utils;
 
@@ -102,14 +104,16 @@ public sealed class MHRDualBlades : MHRMeleeWeapon, IDualBlades
         remove => _onPiercingBindTimerChange.Unhook(value);
     }
 
-    public MHRDualBlades(IProcessManager process) : base(process, Weapon.DualBlades) { }
+    public MHRDualBlades(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService, Weapon.DualBlades) { }
 
     [ScannableMethod]
-    private void GetData()
+    private async Task GetData()
     {
-        MHRDualBladesStructure structure = Memory.Deref<MHRDualBladesStructure>(
-            AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
-            AddressMap.Get<int[]>("CURRENT_WEAPON_OFFSETS")
+        MHRDualBladesStructure structure = await Memory.DerefAsync<MHRDualBladesStructure>(
+            address: AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("CURRENT_WEAPON_OFFSETS")
         );
 
         IsDemonMode = structure.IsDemonModeActive;
@@ -117,12 +121,12 @@ public sealed class MHRDualBlades : MHRMeleeWeapon, IDualBlades
         MaxDemonBuildUp = structure.DemonBuildUpMax;
         DemonBuildUp = structure.DemonBuildUp;
 
-        GetPiercingBind(structure.PiercingBindArrayPointer);
+        await GetPiercingBind(structure.PiercingBindArrayPointer);
     }
 
-    private void GetPiercingBind(long arrayPointer)
+    private async Task GetPiercingBind(nint arrayPointer)
     {
-        long[] piercingBindPtrs = Memory.ReadArraySafe<long>(arrayPointer, 2)
+        nint[] piercingBindPtrs = (await Memory.ReadArraySafeAsync<nint>(arrayPointer, 2))
             .Where(it => !it.IsNullPointer())
             .ToArray();
 
@@ -133,7 +137,8 @@ public sealed class MHRDualBlades : MHRMeleeWeapon, IDualBlades
             return;
         }
 
-        float maxPiercingBindTimer = piercingBindPtrs.Select(it => Memory.Read<MHRPiercingBindStructure>(it))
+        float maxPiercingBindTimer = piercingBindPtrs.Select(async it => await Memory.ReadAsync<MHRPiercingBindStructure>(it))
+            .AwaitResults()
             .Max(it => it.Timer);
 
         MaxPiercingBindTimer = Math.Max(MaxPiercingBindTimer, maxPiercingBindTimer);

@@ -1,0 +1,122 @@
+﻿<UserControl x:Class="HunterPie.UI.Home.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HunterPie.UI.Home.Views"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Home.ViewModels"
+             xmlns:viewer="clr-namespace:HunterPie.UI.Controls.Viewer;assembly=HunterPie.UI"
+             xmlns:text="clr-namespace:HunterPie.UI.Controls.Text;assembly=HunterPie.UI"
+             xmlns:display="clr-namespace:HunterPie.UI.Controls.Display;assembly=HunterPie.UI"
+             xmlns:buttons="clr-namespace:HunterPie.UI.Controls.Buttons;assembly=HunterPie.UI"
+             xmlns:image="clr-namespace:HunterPie.UI.Controls.Image;assembly=HunterPie.UI"
+             mc:Ignorable="d" 
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance viewModels:HomeViewModel}">
+    <viewer:SmoothScrollViewer Background="{StaticResource GRAY_400}">
+        <StackPanel Margin="5">
+            <!-- News section -->
+            <Border Background="{StaticResource GRAY_100}"
+                    BorderThickness="1"
+                    BorderBrush="{StaticResource GRAY}"
+                    CornerRadius="5"
+                    Padding="5"
+                    Visibility="Collapsed">
+                <display:Section Title="News"
+                                 Foreground="{StaticResource WHITE_100}">
+                    <display:Carousel d:ItemsSource="{d:SampleData ItemCount=5}"
+                                      ItemsSource="{Binding News, Mode=OneWay}"
+                                      MaxHeight="200"
+                                      MaxWidth="1000"
+                                      Duration="0:0:10">
+                        <display:Carousel.ItemTemplate>
+                            <DataTemplate DataType="{x:Type viewModels:HomeNewsItemViewModel}">
+                                <Grid>
+                                    <Image Source="{Binding Banner, Mode=OneWay}"
+                                           Stretch="UniformToFill" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"
+                                           Opacity="0.5">
+                                        <Image.Effect>
+                                            <BlurEffect Radius="30"
+                                                        RenderingBias="Performance"/>
+                                        </Image.Effect>
+                                    </Image>
+                                    <Image Source="{Binding Banner, Mode=OneWay}"/>
+                    
+                                </Grid>
+                
+                            </DataTemplate>
+                        </display:Carousel.ItemTemplate>
+                    </display:Carousel>
+                </display:Section>
+            </Border>
+            
+            <Border Background="{StaticResource GRAY_100}"
+                    BorderThickness="1"
+                    BorderBrush="{StaticResource GRAY}"
+                    CornerRadius="5"
+                    Padding="5"
+                    Margin="0,5,0,0">
+                <StackPanel Orientation="Vertical">
+                    <!-- Games section -->
+                    <display:Section Title="Games"
+                                     Foreground="{StaticResource WHITE_100}">
+                        <ItemsControl ItemsSource="{Binding SupportedGames, Mode=OneTime}"
+                                      d:ItemsSource="{d:SampleData ItemCount=5}">
+                            <ItemsControl.Template>
+                                <ControlTemplate>
+                                    <viewer:SmoothScrollViewer VerticalScrollBarVisibility="Disabled"
+                                                               HorizontalScrollBarVisibility="Auto"
+                                                               IsHorizontal="True">
+                                        <StackPanel Orientation="Horizontal"
+                                                    IsItemsHost="True"/>
+                                    </viewer:SmoothScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,3,0">
+                                        <local:SupportedGameView Margin="5"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </display:Section>
+
+                    <display:Section Title="Quick Access"
+                                     Foreground="{StaticResource WHITE_100}">
+                        <ItemsControl ItemsSource="{Binding QuickActions, Mode=OneTime}"
+                                      d:ItemsSource="{d:SampleData ItemCount=5}">
+                            <ItemsControl.Template>
+                                <ControlTemplate>
+                                    <viewer:SmoothScrollViewer VerticalScrollBarVisibility="Disabled"
+                                                               HorizontalScrollBarVisibility="Auto"
+                                                               IsHorizontal="True">
+                                        <StackPanel Orientation="Horizontal"
+                                                   IsItemsHost="True"
+                                                   Grid.IsSharedSizeScope="True"/>
+                                    </viewer:SmoothScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition SharedSizeGroup="SharedGroup"/>
+                                        </Grid.ColumnDefinitions>
+                                        <local:HomeCallToActionView Margin="0,0,3,0"
+                                                                    MaxWidth="200"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </display:Section>
+                </StackPanel>
+                
+            </Border>
+        </StackPanel>
+    </viewer:SmoothScrollViewer>
+</UserControl>

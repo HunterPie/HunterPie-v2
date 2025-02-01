@@ -1,7 +1,22 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    
+    <DrawingImage x:Key="ICON_PLAY">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                <GeometryDrawing Brush="#FF000000" Geometry="F0 M24,24z M0,0z M4.5,5.653C4.5,4.226,6.029,3.323,7.279,4.01L18.819,10.357C20.114,11.069,20.114,12.93,18.819,13.643L7.28,19.99C6.03,20.677,4.501,19.773,4.501,18.347L4.501,5.653z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="ICON_HOME">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                <GeometryDrawing Brush="#FF000000" Geometry="F1 M24,24z M0,0z M11.47,3.841A0.75,0.75,0,0,1,12.53,3.841L21.22,12.531A0.75,0.75,0,1,0,22.28,11.47L13.591,2.78A2.25,2.25,0,0,0,10.409,2.78L1.719,11.47A0.75,0.75,0,1,0,2.78,12.53L11.47,3.841z" />
+                <GeometryDrawing Brush="#FF000000" Geometry="F1 M24,24z M0,0z M12,5.432L20.159,13.591C20.189,13.621,20.219,13.649,20.25,13.677L20.25,19.875C20.25,20.91,19.41,21.75,18.375,21.75L15,21.75A0.75,0.75,0,0,1,14.25,21L14.25,16.5A0.75,0.75,0,0,0,13.5,15.75L10.5,15.75A0.75,0.75,0,0,0,9.75,16.5L9.75,21A0.75,0.75,0,0,1,9,21.75L5.625,21.75A1.875,1.875,0,0,1,3.75,19.875L3.75,13.677A2.29,2.29,0,0,0,3.841,13.591L12,5.432z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 
     <DrawingImage x:Key="ICON_HOUR_GLASS">
         <DrawingImage.Drawing>

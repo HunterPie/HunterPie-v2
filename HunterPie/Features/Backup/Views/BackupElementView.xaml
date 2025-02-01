@@ -1,0 +1,149 @@
+﻿<UserControl x:Class="HunterPie.Features.Backup.Views.BackupElementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:buttons="clr-namespace:HunterPie.UI.Controls.Buttons;assembly=HunterPie.UI"
+             xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters;assembly=HunterPie.UI"
+             xmlns:image="clr-namespace:HunterPie.UI.Controls.Image;assembly=HunterPie.UI"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance vm:BackupElementViewModel}"
+             d:DesignHeight="50" 
+             d:DesignWidth="600"
+             Margin="2.5">
+    <UserControl.Resources>
+        <converters:LongToByteRepresentationConverter x:Key="LongToByteRepresentationConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InvertBooleanConverter x:Key="InvertBooleanConverter"/>
+        <converters:PercentageToRelativeSizeConverter x:Key="PercentageToRelativeSizeConverter"/>
+    </UserControl.Resources>
+    <Border Background="{StaticResource GRAY_50}"
+            BorderBrush="{StaticResource GRAY}"
+            BorderThickness="1"
+            CornerRadius="5"
+            ClipToBounds="True">
+        <Grid>
+            <Rectangle Fill="{StaticResource WHITE_700}"
+                       Opacity="0.3"
+                       RadiusX="5"
+                       RadiusY="5"
+                       HorizontalAlignment="Left"
+                       d:Width="100"
+                       Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Rectangle.Width>
+                    <MultiBinding Converter="{StaticResource PercentageToRelativeSizeConverter}">
+                        <Binding Path="BytesDownloaded"
+                                 Mode="OneWay"/>
+                        <Binding Path="BytesToDownload"
+                                 Mode="OneWay"/>
+                        <Binding Path="ActualWidth"
+                                 RelativeSource="{RelativeSource AncestorType={x:Type Grid}}"/>
+                    </MultiBinding>
+                </Rectangle.Width>
+            </Rectangle>
+
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="30"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Game icon -->
+                <Image d:Source="https://cdn.hunterpie.com/Static/monster-hunter-rise-icon.png"
+                       Source="{Binding GameIcon, Mode=OneTime}"
+                       RenderOptions.BitmapScalingMode="Fant"
+                       Grid.RowSpan="2"
+                       Margin="5,5,5,5"/>
+
+                <!-- Game Name -->
+                <TextBlock d:Text="Monster Hunter Rise: Sunbreak"
+                           Text="{Binding GameName, Mode=OneTime}"
+                           Grid.Column="1"
+                           FontSize="14"
+                           FontWeight="Medium"
+                           Foreground="{StaticResource WHITE_400}"
+                           VerticalAlignment="Center"
+                           Margin="5,0,0,0"/>
+
+                <!-- Save details -->
+                <StackPanel Orientation="Horizontal"
+                            Grid.Column="1"
+                            Grid.Row="1">
+                    <TextBlock Grid.Column="1"
+                               FontSize="11"
+                               FontWeight="Regular"
+                               Foreground="{StaticResource WHITE_400}"
+                               VerticalAlignment="Center"
+                               Margin="5,0,0,0">
+                        <Run Text="Date uploaded:"
+                             Foreground="{StaticResource WHITE_600}"
+                             FontWeight="Medium"/>
+                        <Run Text="{Binding UploadedAt, Mode=OneTime}"/>
+                        <Run Text="Size:"
+                             Foreground="{StaticResource WHITE_600}"
+                             FontWeight="Medium"/>
+                        <Run Text="{Binding ByteSize, Mode=OneTime, Converter={StaticResource LongToByteRepresentationConverter}}"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Folder button-->
+                <buttons:Button Padding="2.5"
+                                Grid.Column="2"
+                                Grid.RowSpan="2"
+                                Margin="2,5,2,5"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                BorderBrush="{StaticResource GRAY_100}"
+                                Background="{StaticResource GRAY_300}"
+                                VerticalContentAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Visibility="{Binding IsDownloaded, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Click="OnOpenFolderClick">
+                    <image:Icon Foreground="{StaticResource WHITE_400}"
+                                Image="{StaticResource ICON_OPEN_FOLDER}"/>
+                </buttons:Button>                
+                
+                <!-- Download button-->
+                <buttons:Button Padding="2.5"
+                                Grid.Column="4"
+                                Grid.RowSpan="2"
+                                Margin="2,5,2,5"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                BorderBrush="{StaticResource GRAY_100}"
+                                Background="{StaticResource GRAY_300}"
+                                VerticalContentAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                IsEnabled="{Binding IsDownloading, Converter={StaticResource InvertBooleanConverter}}"
+                                Click="OnDownloadClick">
+                    <image:Icon Foreground="{StaticResource WHITE_400}"
+                                Image="{StaticResource ICON_CLOUD_DOWNLOAD_MASK}"/>
+                </buttons:Button>
+
+                <!-- Delete button -->
+                <buttons:Button Padding="2"
+                                Grid.Column="3"
+                                Grid.RowSpan="2"
+                                Margin="2,5,2,5"
+                                BorderThickness="1"
+                                CornerRadius="5"
+                                BorderBrush="{StaticResource GRAY_100}"
+                                Background="{StaticResource GRAY_300}"
+                                VerticalContentAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                IsEnabled="{Binding IsDownloading, Converter={StaticResource InvertBooleanConverter}}"
+                                Click="OnDeleteClick">
+                    <image:Icon Foreground="{StaticResource WHITE_400}"
+                                Image="{StaticResource ICON_TRASH}"/>
+                </buttons:Button>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

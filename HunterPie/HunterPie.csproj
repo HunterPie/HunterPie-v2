@@ -16,13 +16,16 @@
     <Nullable>enable</Nullable>
     <LangVersion>11.0</LangVersion>
     <DelaySign>False</DelaySign>
+	<AssemblyVersion>2.12.0.0</AssemblyVersion>
+	<FileVersion>2.12.0.0</FileVersion>
+	<Version>2.12.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE;DEPLOY;DEBUG</DefineConstants>
     <Optimize>True</Optimize>
     <ShouldCreateLogs>True</ShouldCreateLogs>
-    <AdvancedSettingsExpanded>True</AdvancedSettingsExpanded>
+    <AdvancedSettingsExpanded>False</AdvancedSettingsExpanded>
     <UpdateAssemblyVersion>False</UpdateAssemblyVersion>
     <UpdateAssemblyFileVersion>False</UpdateAssemblyFileVersion>
     <UpdateAssemblyInfoVersion>False</UpdateAssemblyInfoVersion>
@@ -65,8 +68,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HunterPie.Core\HunterPie.Core.csproj" />
+    <ProjectReference Include="..\HunterPie.DI\HunterPie.DI.csproj" />
     <ProjectReference Include="..\HunterPie.Integrations\HunterPie.Integrations.csproj" />
-    <ProjectReference Include="..\HunterPie.Native\HunterPie.Native.vcxproj" />
+    <ProjectReference Include="..\HunterPie.Platforms\HunterPie.Platforms.csproj" />
     <ProjectReference Include="..\HunterPie.UI\HunterPie.UI.csproj" />
   </ItemGroup>
 
@@ -83,7 +87,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClrHeapAllocationAnalyzer" Version="3.0.0" Condition="'$(ConfigurationName)' == 'Debug'" />
     <PackageReference Include="DiscordRichPresence" Version="1.0.175" />
   </ItemGroup>
 
@@ -92,6 +95,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Features\Statistics\Details\Views\MonsterDetailsView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Features\Statistics\Details\Views\QuestDetailsView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Features\Statistics\Views\MonsterSummaryView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Features\Statistics\Views\QuestStatisticsSummariesView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Features\Statistics\Views\QuestStatisticsSummarySkeletonView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Features\Statistics\Views\QuestStatisticsSummaryView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -227,6 +248,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Features\Analytics\Strategies\" />
+    <Folder Include="Features\Backup\Strategies\" />
+    <Folder Include="Features\Settings\Factory\" />
     <Folder Include="Integrations\Poogie\Localization\Models\" />
     <Folder Include="Integrations\Poogie\Patch\Models\" />
     <Folder Include="Integrations\Poogie\Report\Models\" />

@@ -1,11 +1,21 @@
 ﻿using HunterPie.Core.Client;
-using HunterPie.Core.Extensions;
+using System.Linq;
 
 namespace HunterPie.Usecases;
 internal class VerifyHunterPiePathUseCase
 {
 
-    public static bool Invoke() => !ClientInfo.ClientPath.ToLowerInvariant()
-        .ContainsAny(new[] { "temp", "appdata" });
+    public static bool Invoke()
+    {
+        string executablePath = ClientInfo.ClientPath;
+        return !IsTemporaryPath(executablePath);
+    }
 
+    private static bool IsTemporaryPath(string path)
+    {
+        string[] tempIndicators = { "temp", "tmp" };
+        string lowerPath = path.ToLowerInvariant();
+
+        return tempIndicators.Any(lowerPath.Contains);
+    }
 }

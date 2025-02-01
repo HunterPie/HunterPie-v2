@@ -2,12 +2,12 @@
 using HunterPie.Core.Client.Configuration;
 using HunterPie.Core.Client.Configuration.Overlay;
 using HunterPie.Core.Game;
-using HunterPie.Core.System;
 using HunterPie.UI.Architecture.Overlay;
 using HunterPie.UI.Overlay;
 using HunterPie.UI.Overlay.Widgets.Abnormality;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HunterPie.Features.Overlay;
 
@@ -15,10 +15,10 @@ internal class AbnormalitiesWidgetInitializer : IWidgetInitializer
 {
     private readonly List<IContextHandler> _handlers = new();
 
-    public void Load(IContext context)
+    public Task LoadAsync(IContext context)
     {
 
-        OverlayConfig config = ClientConfigHelper.GetOverlayConfigFrom(ProcessManager.Game);
+        OverlayConfig config = ClientConfigHelper.GetOverlayConfigFrom(context.Process.Type);
 
         AbnormalityWidgetConfig[] configs = config.AbnormalityTray.Trays.Trays.ToArray();
         for (int i = 0; i < config.AbnormalityTray.Trays.Trays.Count; i++)
@@ -30,6 +30,8 @@ internal class AbnormalitiesWidgetInitializer : IWidgetInitializer
 
             _handlers.Add(new AbnormalityWidgetContextHandler(context, ref abnormConfig));
         }
+
+        return Task.CompletedTask;
     }
 
     public void Unload()

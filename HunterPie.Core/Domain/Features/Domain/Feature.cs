@@ -25,7 +25,7 @@ public class Feature : IFeature
         IsEnabled.PropertyChanged -= OnPropertyChange;
     }
 
-    private void OnPropertyChange(object sender, PropertyChangedEventArgs e)
+    private void OnPropertyChange(object? sender, PropertyChangedEventArgs e)
     {
         if (IsEnabled)
             OnEnable();

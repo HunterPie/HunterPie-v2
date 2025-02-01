@@ -14,7 +14,7 @@ public struct MHRMeowmasterStructure
     public bool IsLagniappleActive;
 
     [FieldOffset(0x88)]
-    public long BuddiesPointer;
+    public nint BuddiesPointer;
 
     [FieldOffset(0xC4)]
     public int CurrentStep;

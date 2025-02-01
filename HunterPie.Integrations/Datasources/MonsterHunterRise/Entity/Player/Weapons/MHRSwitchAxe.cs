@@ -1,11 +1,12 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Utils;
 
@@ -109,17 +110,17 @@ public sealed class MHRSwitchAxe : MHRMeleeWeapon, ISwitchAxe
     #endregion
 
     [ScannableMethod]
-    private void GetData()
+    private async Task GetData()
     {
-        MHRSwitchAxeStructure structure = Memory.Deref<MHRSwitchAxeStructure>(
-            AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
-            AddressMap.GetOffsets("CURRENT_WEAPON_OFFSETS")
+        MHRSwitchAxeStructure structure = await Memory.DerefAsync<MHRSwitchAxeStructure>(
+            address: AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
+            offsets: AddressMap.GetOffsets("CURRENT_WEAPON_OFFSETS")
         );
-        float[] maxChargeBuildUps = Memory.ReadArraySafe<float>(structure.MaxChargeBuildUpsPointer, 6);
+        float[] maxChargeBuildUps = await Memory.ReadArraySafeAsync<float>(structure.MaxChargeBuildUpsPointer, 6);
 
         BuildUp = structure.BuildUp;
 
-        DeferMaxChargeBuildUp(
+        await DeferMaxChargeBuildUp(
             maxChargeBuildUps: maxChargeBuildUps,
             weaponDataPtr: structure.WeaponDataPointer
         );
@@ -134,9 +135,9 @@ public sealed class MHRSwitchAxe : MHRMeleeWeapon, ISwitchAxe
         SlamBuffTimer = slamBuffTimer;
     }
 
-    private void DeferMaxChargeBuildUp(float[] maxChargeBuildUps, long weaponDataPtr)
+    private async Task DeferMaxChargeBuildUp(float[] maxChargeBuildUps, nint weaponDataPtr)
     {
-        MHRSwitchAxeWeaponDataStructure weaponData = Memory.DerefPtr<MHRSwitchAxeWeaponDataStructure>(weaponDataPtr, _maxChargeBuildUpOffsets);
+        MHRSwitchAxeWeaponDataStructure weaponData = await Memory.DerefPtrAsync<MHRSwitchAxeWeaponDataStructure>(weaponDataPtr, _maxChargeBuildUpOffsets);
 
         // MHRise has a jump table to convert the bottle type into an index
         int buildUpIndex = (weaponData.PhialType - 1) switch
@@ -153,7 +154,7 @@ public sealed class MHRSwitchAxe : MHRMeleeWeapon, ISwitchAxe
         MaxChargeBuildUp = maxBuildUp;
     }
 
-    public MHRSwitchAxe(IProcessManager process) : base(process, Weapon.SwitchAxe)
+    public MHRSwitchAxe(IGameProcess process, IScanService scanService) : base(process, scanService, Weapon.SwitchAxe)
     {
     }
 

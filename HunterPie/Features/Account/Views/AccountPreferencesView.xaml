@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="HunterPie.Features.Account.Views.AccountPreferencesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewer="clr-namespace:HunterPie.UI.Controls.Viewer;assembly=HunterPie.UI"
+             xmlns:image="clr-namespace:HunterPie.UI.Controls.Image;assembly=HunterPie.UI"
+             xmlns:viewModels="clr-namespace:HunterPie.Features.Account.ViewModels"
+             xmlns:local="clr-namespace:HunterPie.Features.Account.Views"
+             xmlns:components="clr-namespace:HunterPie.Features.Account.Views.Components"
+             xmlns:views="clr-namespace:HunterPie.Features.Backup.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="400"
+             Background="{StaticResource GRAY_200}"
+             d:DataContext="{d:DesignInstance viewModels:AccountPreferencesViewModel}">
+    <viewer:SmoothScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <ContentPresenter Margin="20,10,20,10">
+                <ContentPresenter.Style>
+                    <Style TargetType="ContentPresenter">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.IsFetchingAccount, RelativeSource={RelativeSource AncestorType={x:Type local:AccountPreferencesView}}}"
+                                        Value="False">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <!-- Loaded account details -->
+                                            <components:AccountDetailsView />
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding DataContext.IsFetchingAccount, RelativeSource={RelativeSource AncestorType={x:Type local:AccountPreferencesView}}}"
+                                        Value="True">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Content">
+                                        <Setter.Value>
+                                            <local:AccountPreferencesSkeletonView/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentPresenter.Style>
+            </ContentPresenter>
+
+            <!-- Backups -->
+            <views:BackupsView Margin="20,0,20,20"/>
+        </StackPanel>
+    </viewer:SmoothScrollViewer>
+</UserControl>

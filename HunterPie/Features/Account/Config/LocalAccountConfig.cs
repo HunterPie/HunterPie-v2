@@ -1,42 +1,45 @@
 ﻿using HunterPie.Core.Client;
+using HunterPie.Features.Account.UseCase;
 using HunterPie.UI.Settings;
 using HunterPie.UI.Settings.Models;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace HunterPie.Features.Account.Config;
+
 internal class LocalAccountConfig
 {
-    private static LocalAccountConfig _instance;
-    private AccountConfig AccountConfig { get; } = new();
+    private readonly AccountConfig _accountConfig;
+    private readonly IAccountUseCase _accountUseCase;
+    private readonly ConfigurationAdapter _configurationAdapter;
+
     private const string ACCOUNT_CONFIG = @"internal\account_config.json";
 
-    private static LocalAccountConfig Instance
+    public LocalAccountConfig(
+        AccountConfig accountConfig,
+        IAccountUseCase accountUseCase,
+        ConfigurationAdapter configurationAdapter)
     {
-        get
-        {
-            _instance ??= new();
-
-            return _instance;
-        }
+        _accountConfig = accountConfig;
+        _accountUseCase = accountUseCase;
+        _configurationAdapter = configurationAdapter;
+        RegisterConfiguration();
     }
 
-    public static AccountConfig Config => Instance.AccountConfig;
-
-    private LocalAccountConfig()
+    private void RegisterConfiguration()
     {
-        ConfigManager.Register(ACCOUNT_CONFIG, AccountConfig);
-        ConfigManager.BindConfiguration(ACCOUNT_CONFIG, AccountConfig);
+        ConfigManager.Register(ACCOUNT_CONFIG, _accountConfig);
+        ConfigManager.BindConfiguration(ACCOUNT_CONFIG, _accountConfig);
     }
 
-    public static async Task<ObservableCollection<ConfigurationCategory>> BuildAccountConfig()
+    public async Task<ObservableCollection<ConfigurationCategoryGroup>> BuildAccountConfigAsync()
     {
-        bool isLoggedIn = await AccountManager.ValidateSessionToken();
+        bool isLoggedIn = await _accountUseCase.IsValidSessionAsync();
 
         return isLoggedIn switch
         {
-            true => ConfigurationAdapter.Adapt(Instance),
-            _ => new ObservableCollection<ConfigurationCategory>()
+            true => _configurationAdapter.Adapt(_accountConfig),
+            _ => new ObservableCollection<ConfigurationCategoryGroup>()
         };
     }
 }

@@ -1,17 +1,18 @@
-﻿using HunterPie.Core.Logger;
-using HunterPie.Core.Native.IPC.Handlers;
+﻿using HunterPie.Core.Native.IPC.Handlers;
 using HunterPie.Core.Native.IPC.Models;
 using HunterPie.Core.Native.IPC.Utils;
+using HunterPie.Core.Observability.Logging;
 using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-#nullable enable
 namespace HunterPie.Core.Native.IPC;
 
 public class IPCService
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     private const string IPC_DEFAULT_ADDRESS = "127.0.0.1";
     private const short IPC_DEFAULT_PORT = 22002;
     private const int IPC_DEFAULT_BUFFER_SIZE = 8192;
@@ -50,14 +51,14 @@ public class IPCService
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            _logger.Error(err.ToString());
             return false;
         }
 
         if (!IsConnected)
             return false;
 
-        Log.Native("Connected to HunterPie Native Interface");
+        _logger.Native("Connected to HunterPie Native Interface");
 
         Listen();
 
@@ -94,7 +95,7 @@ public class IPCService
     private void HandleDisconnect()
     {
         _client?.Dispose();
-        Log.Native("HunterPie was disconnected from Native Interface.");
+        _logger.Native("HunterPie was disconnected from Native Interface.");
 
         Reconnect();
     }
@@ -106,7 +107,7 @@ public class IPCService
             if (IsConnected)
                 break;
 
-            Log.Debug("Attempting to reconnect to Native Interface");
+            _logger.Debug("Attempting to reconnect to Native Interface");
 
             _ = await Connect();
 
@@ -129,12 +130,15 @@ public class IPCService
         {
             await _semaphoreSlim.WaitAsync();
 
-            await Stream?.WriteAsync(raw, 0, raw.Length);
+            if (Stream is null)
+                return false;
+
+            await Stream.WriteAsync(raw, 0, raw.Length);
             return true;
         }
         catch (Exception err)
         {
-            Log.Error(err.ToString());
+            _logger.Error(err.ToString());
         }
         finally
         {
@@ -144,4 +148,3 @@ public class IPCService
         return false;
     }
 }
-#nullable restore

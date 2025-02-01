@@ -1,6 +1,9 @@
 ﻿using HunterPie.Core.Vault.Model;
+using System;
 
 namespace HunterPie.Core.Vault;
+
+[Obsolete("Use ICredentialVault instead")]
 internal class CredentialVaultService
 {
     private static ICredentialVault _vault;

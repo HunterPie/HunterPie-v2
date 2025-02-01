@@ -2,10 +2,11 @@
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
 using HunterPie.Core.Domain.Interfaces;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Game.Quest;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions.Quest;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Utils;
 
@@ -109,12 +110,13 @@ public class MHRQuest : Scannable, IQuest, IDisposable, IEventDispatcher
     }
 
     public MHRQuest(
-        IProcessManager process,
+        IGameProcess process,
+        IScanService scanService,
         int id,
         QuestType type,
         QuestLevel level,
         int stars
-    ) : base(process)
+    ) : base(process, scanService)
     {
         Id = id;
         Type = type;
@@ -123,11 +125,11 @@ public class MHRQuest : Scannable, IQuest, IDisposable, IEventDispatcher
     }
 
     [ScannableMethod]
-    private void GetData()
+    private async Task GetData()
     {
-        MHRQuestStructure questStructure = Memory.Deref<MHRQuestStructure>(
-            AddressMap.GetAbsolute("QUEST_ADDRESS"),
-            AddressMap.GetOffsets("QUEST_OFFSETS")
+        MHRQuestStructure questStructure = await Memory.DerefAsync<MHRQuestStructure>(
+            address: AddressMap.GetAbsolute("QUEST_ADDRESS"),
+            offsets: AddressMap.GetOffsets("QUEST_OFFSETS")
         );
 
         Status = questStructure.State.ToQuestStatus();
@@ -136,8 +138,9 @@ public class MHRQuest : Scannable, IQuest, IDisposable, IEventDispatcher
         TimeLeft = TimeSpan.FromSeconds(questStructure.TimeLimit - questStructure.TimeElapsed);
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
+        base.Dispose();
         IDisposableExtensions.DisposeAll(
             _onQuestStatusChange,
             _onDeathCounterChange

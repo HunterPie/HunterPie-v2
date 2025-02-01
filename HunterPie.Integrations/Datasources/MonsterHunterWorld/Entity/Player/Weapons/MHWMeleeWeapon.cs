@@ -1,10 +1,11 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Skills;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.Common.Entity.Player.Weapons;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Utils;
@@ -12,7 +13,7 @@ using HunterPie.Integrations.Datasources.MonsterHunterWorld.Utils;
 namespace HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Player.Weapons;
 public class MHWMeleeWeapon : CommonMeleeWeapon
 {
-    private readonly int[] _minimumSharpnessByLevel;
+    private int[]? _minimumSharpnessByLevel;
     protected readonly ISkillService _skillService;
     private int _weaponId;
     private Sharpness _sharpness = Sharpness.Red;
@@ -64,35 +65,40 @@ public class MHWMeleeWeapon : CommonMeleeWeapon
         }
     }
 
-    public MHWMeleeWeapon(IProcessManager process, ISkillService skillService, Weapon id) : base(process)
+    public MHWMeleeWeapon(
+        IGameProcess process,
+        IScanService scanService,
+        ISkillService skillService,
+        Weapon id) : base(process, scanService)
     {
         _skillService = skillService;
-        _minimumSharpnessByLevel = Memory.Read<int>(
-            AddressMap.GetAbsolute("MINIMUM_SHARPNESSES_ADDRESS"),
-            8
-        );
         Id = id;
     }
 
     [ScannableMethod]
-    protected void GetWeaponSharpness()
+    protected async Task GetWeaponSharpness()
     {
-        long weaponDataPtr = Process.Memory.Read(
-            AddressMap.GetAbsolute("WEAPON_DATA_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_DATA_OFFSETS")
+        _minimumSharpnessByLevel ??= await Memory.ReadAsync<int>(
+            address: AddressMap.GetAbsolute("MINIMUM_SHARPNESSES_ADDRESS"),
+            count: 8
+        );
+
+        nint weaponDataPtr = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("WEAPON_DATA_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_DATA_OFFSETS")
         );
 
         if (weaponDataPtr.IsNullPointer())
             return;
 
-        int weaponId = Process.Memory.Deref<int>(
-            AddressMap.GetAbsolute("WEAPON_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_ID_OFFSETS")
+        int weaponId = await Memory.DerefAsync<int>(
+            address: AddressMap.GetAbsolute("WEAPON_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_ID_OFFSETS")
         );
 
-        MHWSharpnessStructure sharpness = Process.Memory.Deref<MHWSharpnessStructure>(
-            AddressMap.GetAbsolute("WEAPON_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_SHARPNESS_OFFSETS")
+        MHWSharpnessStructure sharpness = await Memory.DerefAsync<MHWSharpnessStructure>(
+            address: AddressMap.GetAbsolute("WEAPON_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_SHARPNESS_OFFSETS")
         );
 
         if (sharpness.Level is >= Sharpness.Invalid or < Sharpness.Red)
@@ -100,8 +106,11 @@ public class MHWMeleeWeapon : CommonMeleeWeapon
 
         if (SharpnessThresholds is null || _weaponId != weaponId)
         {
-            long weaponSharpnessArrayPtr = Process.Memory.Read(weaponDataPtr, new[] { weaponId * sizeof(long), 0x0C });
-            short[] sharpnesses = Process.Memory.Read<short>(weaponSharpnessArrayPtr, 7);
+            nint weaponSharpnessArrayPtr = await Memory.ReadAsync(
+                address: weaponDataPtr,
+                offsets: new[] { weaponId * sizeof(long), 0x0C }
+            );
+            short[] sharpnesses = await Memory.ReadAsync<short>(weaponSharpnessArrayPtr, 7);
 
             SharpnessThresholds = sharpnesses.Select(t => (int)t)
                                              .ToArray();

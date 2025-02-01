@@ -4,14 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters;assembly=HunterPie.UI"
-             xmlns:logger="clr-namespace:HunterPie.UI.Logger;assembly=HunterPie.UI"
+             xmlns:entity="clr-namespace:HunterPie.UI.Logging.Entity"
+             xmlns:presentation="clr-namespace:HunterPie.UI.Logging.Presentation"
              mc:Ignorable="d"
              d:DesignWidth="400"
-             d:DataContext="{d:DesignInstance logger:LogString}">
+             d:DataContext="{d:DesignInstance entity:LogString}">
     <UserControl.Resources>
         <converters:RelativeSizeConverter x:Key="RelativeSizeConverter"/>
-        <logger:LogLevelToColorConverter x:Key="LogLevelToColorConverter"/>
-        <logger:LogLevelToStringConverter x:Key="LogLevelToStringConverter"/>
+        <presentation:LogLevelToColorConverter x:Key="LogLevelToColorConverter"/>
+        <presentation:LogLevelToStringConverter x:Key="LogLevelToStringConverter"/>
     </UserControl.Resources>
     <Grid>
         <WrapPanel Orientation="Horizontal">

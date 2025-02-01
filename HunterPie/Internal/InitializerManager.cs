@@ -1,4 +1,5 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
+using HunterPie.DI;
 using HunterPie.Domain.Interfaces;
 using HunterPie.Internal.Initializers;
 using System;
@@ -10,83 +11,105 @@ namespace HunterPie.Internal;
 
 internal class InitializerManager
 {
-    private static readonly HashSet<IInitializer> Initializers = new()
+    private static readonly ILogger Logger = LoggerFactory.Create();
+    private static readonly HashSet<IInitializer> CoreInitializers = new() { new MapperFactoryInitializer() };
+
+    private static readonly Type[] Initializers =
     {
-        new FileStreamLoggerInitializer(),
-        new CustomFontsInitializer(),
+        typeof(FileStreamLoggerInitializer),
+        typeof(CustomFontsInitializer),
         
         // Core
-        new MapperFactoryInitializer(),
-        new CredentialVaultInitializer(),
-        new LocalConfigInitializer(),
+        typeof(CredentialVaultInitializer),
+        typeof(LocalConfigInitializer),
         
         // Feature Flags
-        new FeatureFlagsInitializer(),
+        typeof(FeatureFlagsInitializer),
 
-        new NativeLoggerInitializer(),
-
+        typeof(NativeLoggerInitializer),
+        
         // Config
-        new RemoteConfigSyncInitializer(),
-        new ClientConfigMigrationInitializer(),
-        new ClientConfigInitializer(),
-        new ConfigManagerInitializer(),
+        typeof(RemoteConfigSyncInitializer),
+        typeof(ClientConfigMigrationInitializer),
+        typeof(ClientConfigInitializer),
+        typeof(ConfigManagerInitializer),
 
+        typeof(HunterPieLoggerInitializer),
+        typeof(CustomThemeInitializer),
 
-        new HunterPieLoggerInitializer(),
-        new CustomThemeInitializer(),
-
-        new ExceptionCatcherInitializer(),
-        new DialogManagerInitializer(),
-        new UITracerInitializer(),
-        new ClientLocalizationInitializer(),
-        new SystemTrayInitializer(),
-        new ClientConfigBindingsInitializer(),
+        typeof(ExceptionCatcherInitializer),
+        typeof(DialogManagerInitializer),
+        typeof(UITracerInitializer),
+        typeof(ClientLocalizationInitializer),
+        typeof(SystemTrayInitializer),
+        typeof(ClientConfigBindingsInitializer),
 
         // GUI
-        new NavigationTemplatesInitializer(),
-        new AppNotificationsInitializer(),
+        typeof(NavigationInitializer),
+        typeof(NavigationTemplatesInitializer),
+        typeof(AppNotificationsInitializer),
     };
 
-    private static readonly HashSet<IInitializer> UiInitializers = new()
+    private static readonly Type[] UiInitializers =
     {
-        new HotkeyInitializer(),
+        typeof(HotkeyInitializer),
 
         // Debugging
-        new DebugWidgetInitializer(),
+        typeof(DebugWidgetInitializer)
     };
 
-    public static async Task Initialize()
+    public static async Task InitializeCore()
     {
-        Log.Benchmark();
-
-        foreach (IInitializer initializer in Initializers)
+        foreach (IInitializer initializer in CoreInitializers)
+        {
+            Logger.Debug($"Running {initializer.GetType().Name}");
             await initializer.Init();
+        }
+    }
 
-        Log.BenchmarkEnd();
+    public static async Task InitializeAsync()
+    {
+        foreach (Type initializerType in Initializers)
+        {
+            if (DependencyContainer.Get(initializerType) is not IInitializer initializer)
+                continue;
+
+            Logger.Debug($"Running {initializer.GetType().Name}");
+            await initializer.Init();
+        }
     }
 
     public static void InitializeGUI()
     {
-        Log.Benchmark();
-
         // Make sure to run UI initializers in the main thread
         Application.Current.Dispatcher.Invoke(async () =>
         {
-            foreach (IInitializer initializer in UiInitializers)
-                await initializer.Init();
-        });
+            foreach (Type initializerType in UiInitializers)
+            {
+                if (DependencyContainer.Get(initializerType) is not IInitializer initializer)
+                    continue;
 
-        Log.BenchmarkEnd();
+                await initializer.Init();
+            }
+        });
     }
 
     public static void Unload()
     {
-        foreach (IInitializer initializer in Initializers)
+        foreach (IInitializer initializer in CoreInitializers)
             if (initializer is IDisposable disposable)
                 disposable.Dispose();
 
-        foreach (IInitializer initializer in UiInitializers)
-            if (initializer is IDisposable disposable)
+        foreach (Type initializerType in Initializers)
+        {
+            if (DependencyContainer.Get(initializerType) is not IDisposable disposable)
+                continue;
+
+            disposable.Dispose();
+        }
+
+        foreach (Type initializerType in UiInitializers)
+            if (DependencyContainer.Get(initializerType) is IDisposable disposable)
                 disposable.Dispose();
     }
 }

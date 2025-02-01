@@ -6,7 +6,7 @@ namespace HunterPie.Core.Architecture;
 
 public class Bindable : INotifyPropertyChanged
 {
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     protected void SetValue<T>(ref T property, T value, [CallerMemberName] string propertyName = "")
     {

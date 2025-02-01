@@ -1,18 +1,25 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
 using HunterPie.Domain.Interfaces;
-using HunterPie.UI.Logger;
+using HunterPie.UI.Logging.Services;
 using System.Threading.Tasks;
 
 namespace HunterPie.Internal.Initializers;
 
 internal class HunterPieLoggerInitializer : IInitializer
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+    private readonly HunterPieLogWriter _logWriter;
+
+    public HunterPieLoggerInitializer(HunterPieLogWriter logWriter)
+    {
+        _logWriter = logWriter;
+    }
+
     public Task Init()
     {
-        ILogger logger = new HunterPieLogger();
-        Log.Add(logger);
+        LoggerFactory.Add(_logWriter);
 
-        Log.Info("Initialized HunterPie logger");
+        _logger.Info("Initialized HunterPie logger");
 
         return Task.CompletedTask;
     }

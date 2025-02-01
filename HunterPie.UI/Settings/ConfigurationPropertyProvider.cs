@@ -1,4 +1,5 @@
 ﻿using HunterPie.Core.Settings.Types;
+using HunterPie.DI;
 using HunterPie.UI.Settings.Converter;
 using HunterPie.UI.Settings.Converter.Internal;
 using System;
@@ -8,47 +9,51 @@ using Range = HunterPie.Core.Settings.Types.Range;
 
 namespace HunterPie.UI.Settings;
 
-#nullable enable
 public static class ConfigurationPropertyProvider
 {
-    private static readonly Dictionary<Type, IConfigurationPropertyBuilder> Builders = new()
+    private static readonly Dictionary<Type, Type> Builders = new()
     {
-        { typeof(bool), new BooleanConfigurationPropertyBuilder() },
-        { typeof(Color), new ColorConfigurationPropertyBuilder() },
-        { typeof(Enum), new EnumConfigurationPropertyBuilder() },
-        { typeof(IFileSelector), new FileSelectorConfigurationPropertyBuilder() },
-        { typeof(Keybinding), new KeybindingConfigurationPropertyBuilder() },
-        { typeof(Position), new PositionConfigurationPropertyBuilder() },
-        { typeof(Range), new RangeConfigurationPropertyBuilder() },
-        { typeof(Secret), new SecretConfigurationPropertyBuilder() },
-        { typeof(string), new StringConfigurationPropertyBuilder() },
-        { typeof(AbnormalityTrays), new AbnormalityTrayConfigurationPropertyBuilder() },
-        { typeof(MonsterDetailsConfiguration), new MonsterDetailsConfigurationPropertyBuilder() }
+        { typeof(bool), typeof(BooleanConfigurationPropertyBuilder) },
+        { typeof(Color), typeof(ColorConfigurationPropertyBuilder) },
+        { typeof(Enum), typeof(EnumConfigurationPropertyBuilder) },
+        { typeof(IFileSelector), typeof(FileSelectorConfigurationPropertyBuilder) },
+        { typeof(Keybinding), typeof(KeybindingConfigurationPropertyBuilder) },
+        { typeof(Position), typeof(PositionConfigurationPropertyBuilder) },
+        { typeof(Range), typeof(RangeConfigurationPropertyBuilder) },
+        { typeof(Secret), typeof(SecretConfigurationPropertyBuilder) },
+        { typeof(string), typeof(StringConfigurationPropertyBuilder) },
+        { typeof(AbnormalityTrays), typeof(AbnormalityTrayConfigurationPropertyBuilder) },
+        { typeof(MonsterDetailsConfiguration), typeof(MonsterDetailsConfigurationPropertyBuilder) }
     };
 
     public static IConfigurationPropertyBuilder? FindBy(Type type)
     {
         Type? interfaceType = type.GetInterfaces()
-            .FirstOrDefault(it => Builders.ContainsKey(it));
+            .FirstOrDefault(Builders.ContainsKey);
 
         if (interfaceType is { })
-            return Builders[interfaceType];
+            return DependencyContainer.Get(Builders[interfaceType]) as IConfigurationPropertyBuilder;
 
         Type? innerType = type;
 
         if (type.IsGenericType)
             innerType = type.GenericTypeArguments?.FirstOrDefault();
 
-        return innerType switch
+        Type? builderType = innerType switch
         {
             null => null,
-            { IsEnum: true } => FindBy(typeof(Enum)),
+            { IsEnum: true } => Builders.GetValueOrDefault(typeof(Enum)),
             _ => Builders.GetValueOrDefault(innerType)
         };
+
+        if (builderType is not { })
+            return null;
+
+        return DependencyContainer.Get(builderType) as IConfigurationPropertyBuilder;
     }
 
-    public static void RegisterBuilder(Type type, IConfigurationPropertyBuilder builder)
+    public static void RegisterBuilder(Type type, Type builderType)
     {
-        Builders.Add(type, builder);
+        Builders.Add(type, builderType);
     }
 }

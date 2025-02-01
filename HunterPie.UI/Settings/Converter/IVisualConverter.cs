@@ -6,5 +6,5 @@ namespace HunterPie.UI.Settings.Converter;
 
 public interface IVisualConverter
 {
-    public FrameworkElement Build(GameProcess? game, object parent, PropertyInfo childInfo);
+    public FrameworkElement Build(GameProcessType? game, object parent, PropertyInfo childInfo);
 }

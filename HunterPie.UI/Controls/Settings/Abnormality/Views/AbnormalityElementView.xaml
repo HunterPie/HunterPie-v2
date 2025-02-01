@@ -18,9 +18,10 @@
     </UserControl.Resources>
     <buttons:Button Padding="0"
                     HorizontalContentAlignment="Stretch"
-                    CornerRadius="0"
-                    BorderThickness="0"
-                    Background="{StaticResource GRAY_300}">
+                    CornerRadius="5"
+                    BorderThickness="1"
+                    Background="{StaticResource GRAY_100}"
+                    BorderBrush="{StaticResource GRAY}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="40"/>
@@ -32,10 +33,12 @@
                 <RowDefinition Height="1.5*"/>
             </Grid.RowDefinitions>
 
-            <Rectangle Grid.Column="0"
+            <Border Grid.Column="0"
                        Grid.Row="0"
                        Grid.RowSpan="2"
-                       Fill="{StaticResource GRAY_400}"/>
+                       Background="{StaticResource GRAY_200}"
+                       BorderThickness="0,0,1,0"
+                       BorderBrush="{StaticResource GRAY}"/>
             <Image Grid.Column="0"
                    Grid.Row="0"
                    Grid.RowSpan="2"

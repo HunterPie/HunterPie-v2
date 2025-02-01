@@ -45,12 +45,12 @@ public partial class MainBodyView : UserControl
         vm.LaunchGame();
     }
 
-    private void OnCloseSupporterFeedback(object sender, RoutedEventArgs e)
+    private async void OnCloseSupporterFeedback(object sender, RoutedEventArgs e)
     {
         if (DataContext is not MainBodyViewModel vm)
             return;
 
-        vm.CloseSupporterPrompt();
+        await vm.CloseSupporterPromptAsync();
     }
 
     private void OnBannerClick(object sender, MouseButtonEventArgs e)

@@ -1,36 +1,43 @@
 ﻿using HunterPie.Core.Domain.Memory;
-using HunterPie.Core.Domain.Process;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Domain.Process.Entity;
+using HunterPie.Core.Observability.Logging;
+using HunterPie.Core.Scan.Service;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace HunterPie.Core.Domain;
 
-public delegate void Middleware<T>(ref T dto) where T : struct;
+public delegate Task AsyncMiddleware<in T>(T dto) where T : class;
+
+public delegate Task AsyncDelegate();
+
 
 /// <summary>
 /// Implementation for a scannable entity, handles the scan and middlewares internally
 /// </summary>
-public abstract class Scannable
+public abstract class Scannable : IDisposable
 {
-    protected readonly IProcessManager Process;
-    protected IMemory Memory => Process.Memory;
-    private readonly Dictionary<Type, HashSet<Delegate>> _middlewares = new();
-    private readonly List<Delegate> _scanners = new();
-    private readonly Dictionary<Delegate, int> _troublesomeScannables = new();
+    private readonly ILogger _logger = LoggerFactory.Create();
 
-    protected Scannable(IProcessManager process)
+    protected readonly IGameProcess Process;
+    protected readonly IScanService ScanService;
+    protected IMemoryAsync Memory => Process.Memory;
+    private readonly Dictionary<Type, HashSet<Delegate>> _middlewares = new();
+    private readonly List<AsyncDelegate> _scanners = new();
+    private readonly Dictionary<AsyncDelegate, int> _troublesomeScannables = new();
+
+    protected Scannable(
+        IGameProcess process,
+        IScanService scanService)
     {
         Process = process;
+        ScanService = scanService;
 
         AppendScannableMethods();
-    }
 
-    protected Scannable()
-    {
-        AppendScannableMethods();
+        ScanService.Add(this);
     }
 
     private void AppendScannableMethods()
@@ -40,41 +47,36 @@ public abstract class Scannable
 
         foreach (MethodInfo method in methods)
         {
-            object[] scannableAttributes = method.GetCustomAttributes(typeof(ScannableMethod), true);
 
-            if (scannableAttributes.Length <= 0)
+            ScannableMethod? attribute = method.GetCustomAttribute<ScannableMethod>(inherit: true);
+
+            if (attribute is not { })
                 continue;
 
-            var attributes = (ScannableMethod)scannableAttributes.First();
+            var func = (AsyncDelegate)Delegate.CreateDelegate(typeof(AsyncDelegate), this, method.Name);
 
-            var func = (Action)Delegate.CreateDelegate(typeof(Action), this, method.Name);
-
-            _ = Add(attributes.DtoType, func);
+            _ = Add(attribute.DtoType, func);
         }
     }
 
     /// <summary>
     /// Calls each scanning function added to the scanners list
     /// </summary>
-    internal void Scan()
+    internal async Task ScanAsync()
     {
-        Delegate[] readOnlyScanners = _scanners.ToArray();
-
-        foreach (Delegate scanner in readOnlyScanners)
+        foreach (AsyncDelegate scanner in _scanners)
             try
             {
-                _ = scanner.DynamicInvoke();
+                await scanner.Invoke();
             }
             catch (Exception err)
             {
-                if (!_troublesomeScannables.ContainsKey(scanner))
-                    _troublesomeScannables.Add(scanner, 0);
-
+                _troublesomeScannables.TryAdd(scanner, 0);
                 _troublesomeScannables[scanner]++;
 
                 if (_troublesomeScannables[scanner] >= 3)
                 {
-                    Log.Warn($"Scanner: {scanner.Method.Name} had multiple exceptions. Disabling scanner for now;\n{err}");
+                    _logger.Warning($"Scanner: {scanner.Method.Name} had multiple exceptions. Disabling scanner for now;\n{err}");
 
                     _scanners.Remove(scanner);
 
@@ -84,48 +86,18 @@ public abstract class Scannable
     }
 
     /// <summary>
-    /// Adds a new scanning action to the scanners list, actions added by this
-    /// will be called in order by the <seealso cref="Scan"/> method
-    /// </summary>
-    /// <param name="type">Type of DTO this action will handle</param>
-    /// <param name="scanner">Action to handle this DTO</param>
-    /// <returns>True if scanner was added successfully, false otherwise</returns>
-    protected bool Add<T>(Func<T> scanner)
-    {
-        Type type = typeof(T);
-
-        _scanners.Add(scanner);
-
-        if (!_middlewares.ContainsKey(type))
-            _middlewares.Add(type, new HashSet<Delegate>());
-
-        return true;
-    }
-
-    protected bool Add(Type type, Action scanner)
-    {
-        _scanners.Add(scanner);
-
-        if (type is null)
-            return true;
-
-        if (!_middlewares.ContainsKey(type))
-            _middlewares.Add(type, new());
-
-        return true;
-    }
-
-    /// <summary>
     /// Calls the middlewares
     /// </summary>
     /// <typeparam name="T">Type of the DTO</typeparam>
     /// <param name="data">DTO to pass to the middlewares</param>
-    protected void Next<T>(ref T data) where T : struct
+    protected async Task Next<T>(T data) where T : class
     {
-        foreach (Delegate mid in _middlewares[data.GetType()])
+        foreach (Delegate middleware in _middlewares[data.GetType()])
         {
-            var function = (Middleware<T>)mid;
-            function(ref data);
+            if (middleware is not AsyncMiddleware<T> func)
+                continue;
+
+            await func(data);
         }
     }
 
@@ -136,13 +108,13 @@ public abstract class Scannable
     /// <typeparam name="T">Type of the DTO</typeparam>
     /// <param name="middleware">Function to be called</param>
     /// <returns>true if the middleware was added successfully, false otherwise</returns>
-    public bool MiddlewareFor<T>(Middleware<T> middleware) where T : struct
+    public bool MiddlewareFor<T>(AsyncMiddleware<T> middleware) where T : class
     {
         Type type = typeof(T);
-        if (!_middlewares.ContainsKey(type))
+        if (!_middlewares.TryGetValue(type, out HashSet<Delegate>? value))
             return false;
 
-        _ = _middlewares[type].Add(middleware);
+        value.Add(middleware);
 
         return true;
     }
@@ -153,14 +125,32 @@ public abstract class Scannable
     /// <typeparam name="T">Type of the DTO</typeparam>
     /// <param name="middleware">Function to remove</param>
     /// <returns>true if the middleware was removed successfully, false otherwise</returns>
-    public bool RemoveMiddleware<T>(Middleware<T> middleware) where T : struct
+    public bool RemoveMiddleware<T>(AsyncMiddleware<T> middleware) where T : class
     {
         Type type = typeof(T);
-        if (!_middlewares.ContainsKey(type))
+        if (!_middlewares.TryGetValue(type, out HashSet<Delegate>? value))
             return false;
 
-        _ = _middlewares[type].Remove(middleware);
+        _ = value.Remove(middleware);
 
         return true;
+    }
+
+    private bool Add(Type? type, AsyncDelegate scanner)
+    {
+        _scanners.Add(scanner);
+
+        if (type is null)
+            return true;
+
+        if (!_middlewares.ContainsKey(type))
+            _middlewares.Add(type, new HashSet<Delegate>());
+
+        return true;
+    }
+
+    public virtual void Dispose()
+    {
+        ScanService.Remove(this);
     }
 }

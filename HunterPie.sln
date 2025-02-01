@@ -20,6 +20,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HunterPie.Native", "HunterP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HunterPie.Integrations", "HunterPie.Integrations\HunterPie.Integrations.csproj", "{71312F08-EC45-4117-B7AA-911A8FF368C3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HunterPie.DI", "HunterPie.DI\HunterPie.DI.csproj", "{94B2910A-2588-4292-926D-88D60FE5DDFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HunterPie.Platforms", "HunterPie.Platforms\HunterPie.Platforms.csproj", "{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,12 +145,48 @@ Global
 		{71312F08-EC45-4117-B7AA-911A8FF368C3}.Release|x64.Build.0 = Release|Any CPU
 		{71312F08-EC45-4117-B7AA-911A8FF368C3}.Release|x86.ActiveCfg = Release|Any CPU
 		{71312F08-EC45-4117-B7AA-911A8FF368C3}.Release|x86.Build.0 = Release|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Debug|x64.Build.0 = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Debug|x86.Build.0 = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Deploy|Any CPU.ActiveCfg = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Deploy|Any CPU.Build.0 = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Deploy|x64.ActiveCfg = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Deploy|x64.Build.0 = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Deploy|x86.ActiveCfg = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Deploy|x86.Build.0 = Debug|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Release|x64.ActiveCfg = Release|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Release|x64.Build.0 = Release|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Release|x86.ActiveCfg = Release|Any CPU
+		{94B2910A-2588-4292-926D-88D60FE5DDFE}.Release|x86.Build.0 = Release|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Debug|x64.Build.0 = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Debug|x86.Build.0 = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Deploy|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Deploy|Any CPU.Build.0 = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Deploy|x64.ActiveCfg = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Deploy|x64.Build.0 = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Deploy|x86.ActiveCfg = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Deploy|x86.Build.0 = Debug|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Release|x64.ActiveCfg = Release|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Release|x64.Build.0 = Release|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Release|x86.ActiveCfg = Release|Any CPU
+		{0CB6E5A0-7E59-4395-B7B2-153CD8AD8F56}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {9BF75590-F213-418A-8657-32D49F05BD13}
 		BuildVersion_StartDate = 2000/1/1
+		SolutionGuid = {9BF75590-F213-418A-8657-32D49F05BD13}
 	EndGlobalSection
 EndGlobal

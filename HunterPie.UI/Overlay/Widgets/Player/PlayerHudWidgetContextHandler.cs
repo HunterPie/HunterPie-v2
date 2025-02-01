@@ -5,7 +5,6 @@ using HunterPie.Core.Game.Entity.Player;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
-using HunterPie.Core.System;
 using HunterPie.UI.Overlay.Widgets.Player.ViewModels;
 using HunterPie.UI.Overlay.Widgets.Player.Views;
 using System;
@@ -20,7 +19,10 @@ public class PlayerHudWidgetContextHandler : IContextHandler
 
     public PlayerHudWidgetContextHandler(IContext context)
     {
-        PlayerHudWidgetConfig config = ClientConfigHelper.DeferOverlayConfig(ProcessManager.Game, (config) => config.PlayerHudWidget);
+        PlayerHudWidgetConfig config = ClientConfigHelper.DeferOverlayConfig(
+            game: context.Process.Type,
+            deferDelegate: (config) => config.PlayerHudWidget
+        );
 
         _view = new PlayerHudView(config);
         _viewModel = _view.ViewModel;

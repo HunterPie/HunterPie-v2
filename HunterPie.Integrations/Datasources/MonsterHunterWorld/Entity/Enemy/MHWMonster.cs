@@ -2,26 +2,29 @@
 using HunterPie.Core.Client.Configuration.Enums;
 using HunterPie.Core.Domain;
 using HunterPie.Core.Domain.Interfaces;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
-using HunterPie.Core.Game.Data;
 using HunterPie.Core.Game.Data.Definitions;
 using HunterPie.Core.Game.Data.Repository;
 using HunterPie.Core.Game.Entity.Enemy;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.Common.Entity.Enemy;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Utils;
+using System.Runtime.InteropServices;
 
 namespace HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Enemy;
 
 public sealed class MHWMonster : CommonMonster
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     #region Private
     private readonly MonsterDefinition _definition;
-    private readonly long _address;
+    private readonly nint _address;
     private bool _isLoaded;
     private int _doubleLinkedListIndex;
     private float _health = -1;
@@ -32,8 +35,8 @@ public sealed class MHWMonster : CommonMonster
     private float _stamina;
     private float _captureThreshold;
     private readonly MHWMonsterAilment _enrage = new(MonsterAilmentRepository.Enrage);
-    private readonly (long, MHWMonsterPart)[] _parts;
-    private List<(long, MHWMonsterAilment)>? _ailments;
+    private readonly (nint, MHWMonsterPart)[] _parts;
+    private List<(nint, MHWMonsterAilment)>? _ailments;
     #endregion
 
     public override int Id { get; protected set; }
@@ -170,14 +173,19 @@ public sealed class MHWMonster : CommonMonster
         }
     }
 
-    public MHWMonster(IProcessManager process, long address, string em) : base(process)
+    public MHWMonster(
+        IGameProcess process,
+        IScanService scanService,
+        nint address,
+        int id,
+        string em) : base(process, scanService)
     {
         _address = address;
         Em = em;
-        Id = Memory.Read<int>(_address + 0x12280);
+        Id = id;
 
         _definition = MonsterRepository.FindBy(GameType.World, Id) ?? MonsterRepository.UnknownDefinition;
-        _parts = _definition.Parts.Select(it => (0L, new MHWMonsterPart(it)))
+        _parts = _definition.Parts.Select(it => (IntPtr.Zero, new MHWMonsterPart(it)))
             .ToArray();
         UpdateDetails();
     }
@@ -190,49 +198,44 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetMonsterBasicInformation()
+    private async Task GetMonsterBasicInformation()
     {
-        int doubleLinkedListIndex = Process.Memory.Read<int>(_address + 0x1228C);
+        int doubleLinkedListIndex = await Memory.ReadAsync<int>(_address + 0x1228C);
 
         _doubleLinkedListIndex = doubleLinkedListIndex;
     }
 
     [ScannableMethod]
-    private void GetMonsterHealthData()
+    private async Task GetMonsterHealthData()
     {
-        long monsterHealthPtr = Process.Memory.Read<long>(_address + 0x7670);
-        float[] healthValues = Process.Memory.Read<float>(monsterHealthPtr + 0x60, 2);
+        nint monsterHealthPtr = await Memory.ReadAsync<nint>(_address + 0x7670);
+        float[] healthValues = await Memory.ReadAsync<float>(monsterHealthPtr + 0x60, 2);
 
         MaxHealth = healthValues[0];
         Health = healthValues[1];
     }
 
     [ScannableMethod]
-    private void GetMonsterStaminaData()
+    private async Task GetMonsterStaminaData()
     {
-        float[] staminaValues = Process.Memory.Read<float>(_address + 0x1C0F0, 2);
+        float[] staminaValues = await Memory.ReadAsync<float>(_address + 0x1C0F0, 2);
 
         MaxStamina = staminaValues[1];
         Stamina = staminaValues[0];
     }
 
     [ScannableMethod]
-    private void GetMonsterCrownData()
+    private async Task GetMonsterCrownData()
     {
-        float sizeModifier = Process.Memory.Read<float>(_address + 0x7730);
-        float sizeMultiplier = Process.Memory.Read<float>(_address + 0x184);
+        float sizeModifier = await Memory.ReadAsync<float>(_address + 0x7730);
+        float sizeMultiplier = await Memory.ReadAsync<float>(_address + 0x184);
 
         if (sizeModifier is <= 0 or >= 2)
             sizeModifier = 1;
 
         float monsterSizeMultiplier = (float)Math.Round(sizeMultiplier / sizeModifier * 100f) / 100f;
 
-        MonsterSizeDefinition? crownData = MonsterData.GetMonsterData(Id)?.Size;
-
-        if (crownData is null)
-            return;
-
-        MonsterSizeDefinition crown = crownData.Value;
+        MonsterSizeDefinition crown = _definition.Size;
 
         Crown = monsterSizeMultiplier >= crown.Gold ? Crown.Gold
             : monsterSizeMultiplier >= crown.Silver ? Crown.Silver
@@ -241,14 +244,17 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetAction()
+    private async Task GetAction()
     {
-        long actionPtr = _address + 0x61C8;
-        int actionId = Memory.Read<int>(actionPtr + 0xB0);
-        actionPtr = Memory.ReadPtr(actionPtr, new[] { (2 * 8) + 0x68, actionId * 8, 0, 0x20 });
-        uint actionOffset = Memory.Read<uint>(actionPtr + 3);
-        long actionRef = Memory.Read<long>(actionPtr + actionOffset + 7 + 8);
-        string? action = Memory.Read(actionRef, 64).SanitizeActionString();
+        nint actionPtr = _address + 0x61C8;
+        int actionId = await Memory.ReadAsync<int>(actionPtr + 0xB0);
+        actionPtr = await Memory.ReadPtrAsync(
+            address: actionPtr,
+            offsets: new[] { (2 * 8) + 0x68, actionId * 8, 0, 0x20 }
+        );
+        uint actionOffset = await Memory.ReadAsync<uint>(actionPtr + 3);
+        nint actionRef = await Memory.ReadAsync<nint>(actionPtr + (nint)actionOffset + 7 + 8);
+        string? action = (await Memory.ReadAsync(actionRef, 64)).SanitizeActionString();
 
         if (action is null)
             return;
@@ -257,9 +263,9 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetMonsterEnrage()
+    private async Task GetMonsterEnrage()
     {
-        MHWMonsterStatusStructure enrageStructure = Process.Memory.Read<MHWMonsterStatusStructure>(_address + 0x1BE30);
+        MHWMonsterStatusStructure enrageStructure = await Memory.ReadAsync<MHWMonsterStatusStructure>(_address + 0x1BE30);
         IUpdatable<MHWMonsterStatusStructure> enrage = _enrage;
 
         IsEnraged = enrageStructure.Duration > 0;
@@ -268,11 +274,11 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetLockedOnMonster()
+    private async Task GetLockedOnMonster()
     {
-        long lockedOnDoubleLinkedListAddress = Memory.Read(
-            AddressMap.GetAbsolute("LOCKON_ADDRESS"),
-            AddressMap.Get<int[]>("LOCKEDON_MONSTER_INDEX_OFFSETS")
+        nint lockedOnDoubleLinkedListAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("LOCKON_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("LOCKEDON_MONSTER_INDEX_OFFSETS")
         );
 
         if (lockedOnDoubleLinkedListAddress.IsNullPointer())
@@ -281,7 +287,7 @@ public sealed class MHWMonster : CommonMonster
             return;
         }
 
-        int lockedOnDoubleLinkedListIndex = Memory.Read<int>(lockedOnDoubleLinkedListAddress + 0x950);
+        int lockedOnDoubleLinkedListIndex = await Memory.ReadAsync<int>(lockedOnDoubleLinkedListAddress + 0x950);
 
         bool isTarget = lockedOnDoubleLinkedListIndex == _doubleLinkedListIndex;
 
@@ -294,19 +300,21 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetManualTargetedMonster()
+    private async Task GetManualTargetedMonster()
     {
-        long questTargetAddress = Memory.Deref<long>(
-            AddressMap.GetAbsolute("MONSTER_QUEST_TARGET_ADDRESS"),
-            AddressMap.GetOffsets("MONSTER_QUEST_TARGET_OFFSETS")
+        nint questTargetAddress = await Memory.DerefAsync<nint>(
+            address: AddressMap.GetAbsolute("MONSTER_QUEST_TARGET_ADDRESS"),
+            offsets: AddressMap.GetOffsets("MONSTER_QUEST_TARGET_OFFSETS")
         );
-        MHWMapMonsterSelectionStructure mapSelection = Memory.Deref<MHWMapMonsterSelectionStructure>(
-            AddressMap.GetAbsolute("MONSTER_MANUAL_TARGET_ADDRESS"),
-            AddressMap.GetOffsets("MONSTER_MANUAL_TARGET_OFFSETS")
+        MHWMapMonsterSelectionStructure mapSelection = await Memory.DerefAsync<MHWMapMonsterSelectionStructure>(
+            address: AddressMap.GetAbsolute("MONSTER_MANUAL_TARGET_ADDRESS"),
+            offsets: AddressMap.GetOffsets("MONSTER_MANUAL_TARGET_OFFSETS")
         );
         bool isTargetByQuest = !questTargetAddress.IsNullPointer();
         bool isTargetPinned = !mapSelection.MapInsectsRef.IsNullPointer() && !mapSelection.GuiRadarRef.IsNullPointer();
-        bool isSelected = isTargetByQuest ? questTargetAddress == _address : mapSelection.SelectedMonster == _address;
+        bool isSelected = isTargetByQuest
+            ? questTargetAddress == _address
+            : mapSelection.SelectedMonster == _address;
 
         ManualTarget = (isTargetPinned || isTargetByQuest) switch
         {
@@ -317,32 +325,32 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetMonsterParts()
+    private async Task GetMonsterParts()
     {
-        long monsterPartPtr = Process.Memory.Read<long>(_address + 0x1D058);
+        nint monsterPartPtr = await Memory.ReadAsync<nint>(_address + 0x1D058);
 
         if (monsterPartPtr == 0)
             return;
 
-        long monsterPartAddress = monsterPartPtr + 0x40;
-        long monsterSeverableAddress = monsterPartPtr + 0x1FC8;
+        nint monsterPartAddress = monsterPartPtr + 0x40;
+        nint monsterSeverableAddress = monsterPartPtr + 0x1FC8;
 
         int normalPartIndex = 0;
 
         for (int pIndex = 0; pIndex < _parts.Length; pIndex++)
         {
-            (long cachedAddress, MHWMonsterPart part) = _parts[pIndex];
+            (nint cachedAddress, MHWMonsterPart part) = _parts[pIndex];
             MonsterPartDefinition partSchema = part.Definition;
             MHWMonsterPartStructure partStructure = new();
 
             // If the part address has been cached already, we can just read them
             if (cachedAddress > 0)
             {
-                partStructure = Process.Memory.Read<MHWMonsterPartStructure>(cachedAddress);
+                partStructure = await Memory.ReadAsync<MHWMonsterPartStructure>(cachedAddress);
 
                 // Alatreon elemental explosion level
                 if (Id == 87 && partStructure.Index == 3)
-                    partStructure.Counter = Process.Memory.Read<int>(_address + 0x20920);
+                    partStructure.Counter = await Memory.ReadAsync<int>(_address + 0x20920);
 
                 part.Update(partStructure);
                 continue;
@@ -351,10 +359,10 @@ public sealed class MHWMonster : CommonMonster
             if (partSchema.IsSeverable)
                 while (monsterSeverableAddress < (monsterSeverableAddress + (0x120 * 32)))
                 {
-                    if (Process.Memory.Read<int>(monsterSeverableAddress) <= 0xA0)
+                    if (await Memory.ReadAsync<int>(monsterSeverableAddress) <= 0xA0)
                         monsterSeverableAddress += 0x8;
 
-                    partStructure = Process.Memory.Read<MHWMonsterPartStructure>(monsterSeverableAddress);
+                    partStructure = await Memory.ReadAsync<MHWMonsterPartStructure>(monsterSeverableAddress);
 
                     if (partStructure.Index == partSchema.Id && partStructure.MaxHealth > 0)
                     {
@@ -364,7 +372,7 @@ public sealed class MHWMonster : CommonMonster
 
                         do
                             monsterSeverableAddress += 0x78;
-                        while (partStructure.Equals(Process.Memory.Read<MHWMonsterPartStructure>(monsterSeverableAddress)));
+                        while (partStructure.Equals(await Memory.ReadAsync<MHWMonsterPartStructure>(monsterSeverableAddress)));
 
                         break;
                     }
@@ -373,8 +381,8 @@ public sealed class MHWMonster : CommonMonster
                 }
             else
             {
-                long address = monsterPartAddress + (normalPartIndex * 0x1F8);
-                partStructure = Process.Memory.Read<MHWMonsterPartStructure>(address);
+                nint address = monsterPartAddress + (normalPartIndex * 0x1F8);
+                partStructure = await Memory.ReadAsync<MHWMonsterPartStructure>(address);
 
 
                 _parts[pIndex] = (address, part);
@@ -389,11 +397,11 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetMonsterPartTenderizes()
+    private async Task GetMonsterPartTenderizes()
     {
-        MHWTenderizeInfoStructure[] tenderizeInfos = Process.Memory.Read<MHWTenderizeInfoStructure>(
-            _address + 0x1C458,
-            10
+        MHWTenderizeInfoStructure[] tenderizeInfos = await Memory.ReadAsync<MHWTenderizeInfoStructure>(
+            address: _address + 0x1C458,
+            count: 10
         );
 
         foreach (MHWTenderizeInfoStructure tenderizeInfo in tenderizeInfos)
@@ -411,60 +419,62 @@ public sealed class MHWMonster : CommonMonster
     }
 
     [ScannableMethod]
-    private void GetMonsterAilments()
+    private async Task GetMonsterAilments()
     {
-        if (_ailments is null)
+        if (_ailments is { })
         {
-            _ailments = new(32);
-            long monsterAilmentArrayElement = _address + 0x1BC40;
-            long monsterAilmentPtr = Process.Memory.Read<long>(monsterAilmentArrayElement);
-
-            while (monsterAilmentPtr > 1)
+            foreach ((nint, MHWMonsterAilment) value in _ailments)
             {
-                long currentMonsterAilmentPtr = monsterAilmentPtr;
-                // Comment from V1 so I don't forget: There's a gap between the monsterAilmentPtr and the actual ailment data
-                MHWMonsterAilmentStructure structure = Process.Memory.Read<MHWMonsterAilmentStructure>(currentMonsterAilmentPtr + 0x148);
+                (nint address, MHWMonsterAilment ailment) = value;
 
-                monsterAilmentArrayElement += sizeof(long);
-                monsterAilmentPtr = Process.Memory.Read<long>(monsterAilmentArrayElement);
-
-                if (structure.Owner != _address)
-                    break;
-
-                AilmentDefinition? ailmentDef = MonsterAilmentRepository.FindBy(GameType.World, structure.Id);
-                if (ailmentDef is not { } definition || definition.IsUnknown)
-                    continue;
-
-                var ailment = new MHWMonsterAilment(definition);
-
-                _ailments.Add((currentMonsterAilmentPtr, ailment));
-                this.Dispatch(_onNewAilmentFound, ailment);
-
-                IUpdatable<MHWMonsterAilmentStructure> updatable = ailment;
-                updatable.Update(structure);
+                MHWMonsterAilmentStructure structure = await Memory.ReadAsync<MHWMonsterAilmentStructure>(address + 0x148);
+                ailment.Update(structure);
             }
 
             return;
         }
 
-        foreach ((long, MHWMonsterAilment) value in _ailments)
-        {
-            (long address, MHWMonsterAilment ailment) = value;
+        _ailments = new List<(nint, MHWMonsterAilment)>(32);
+        nint monsterAilmentArrayElement = _address + 0x1BC40;
+        nint monsterAilmentPtr = await Memory.ReadAsync<nint>(monsterAilmentArrayElement);
 
-            MHWMonsterAilmentStructure structure = Process.Memory.Read<MHWMonsterAilmentStructure>(address + 0x148);
-            ailment.Update(structure);
+        while (monsterAilmentPtr > 1)
+        {
+            nint currentMonsterAilmentPtr = monsterAilmentPtr;
+            // Comment from V1 so I don't forget: There's a gap between the monsterAilmentPtr and the actual ailment data
+            MHWMonsterAilmentStructure structure = await Memory.ReadAsync<MHWMonsterAilmentStructure>(currentMonsterAilmentPtr + 0x148);
+
+            monsterAilmentArrayElement += Marshal.SizeOf<nint>();
+            monsterAilmentPtr = await Memory.ReadAsync<nint>(monsterAilmentArrayElement);
+
+            if (structure.Owner != _address)
+                break;
+
+            AilmentDefinition? ailmentDef = MonsterAilmentRepository.FindBy(GameType.World, structure.Id);
+            if (ailmentDef is not { } definition || definition.IsUnknown)
+                continue;
+
+            var ailment = new MHWMonsterAilment(definition);
+
+            _ailments.Add((currentMonsterAilmentPtr, ailment));
+            this.Dispatch(_onNewAilmentFound, ailment);
+
+            IUpdatable<MHWMonsterAilmentStructure> updatable = ailment;
+            updatable.Update(structure);
         }
     }
 
     [ScannableMethod]
-    private void FinishScan()
+    private Task FinishScan()
     {
         if (_isLoaded)
-            return;
+            return Task.CompletedTask;
 
-        Log.Debug($"Initialized {Name} at address {_address:X} with id: {Id}");
+        _logger.Debug($"Initialized {Name} at address {_address:X} with id: {Id}");
         _isLoaded = true;
         this.Dispatch(_onSpawn, EventArgs.Empty);
+
+        return Task.CompletedTask;
     }
 
     public override void Dispose()

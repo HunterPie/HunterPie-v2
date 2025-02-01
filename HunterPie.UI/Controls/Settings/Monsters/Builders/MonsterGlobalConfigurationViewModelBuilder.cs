@@ -14,12 +14,12 @@ namespace HunterPie.UI.Controls.Settings.Monsters.Builders;
 public static class MonsterGlobalConfigurationViewModelBuilder
 {
     public static MonsterGlobalConfigurationViewModel Build(
-        GameProcess game,
+        GameProcessType game,
         ObservableHashSet<PartGroupType> partGroups,
         ObservableHashSet<int> allowedAilments
     )
     {
-        GameType? gameType = MapFactory.Map<GameProcess, GameType?>(game);
+        GameType? gameType = MapFactory.Map<GameProcessType, GameType?>(game);
 
         if (gameType is not { })
             throw new ArgumentNullException($"{nameof(game)} must be a valid game");

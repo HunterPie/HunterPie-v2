@@ -2,15 +2,18 @@
 using HunterPie.UI.Architecture.Overlay;
 using HunterPie.UI.Overlay;
 using HunterPie.UI.Overlay.Widgets.Classes;
+using System.Threading.Tasks;
 
 namespace HunterPie.Features.Overlay;
 internal class ClassWidgetInitializer : IWidgetInitializer
 {
     private IContextHandler? _handler;
 
-    public void Load(IContext context)
+    public Task LoadAsync(IContext context)
     {
         _handler = new ClassWidgetContextHandler(context);
+
+        return Task.CompletedTask;
     }
 
     public void Unload()

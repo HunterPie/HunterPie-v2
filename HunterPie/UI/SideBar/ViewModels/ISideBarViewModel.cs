@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace HunterPie.UI.SideBar.ViewModels;
 
@@ -11,5 +12,5 @@ public interface ISideBarViewModel : INotifyPropertyChanged
     public bool IsAvailable { get; }
     public bool IsSelected { get; set; }
 
-    public void Execute();
+    public Task ExecuteAsync();
 }

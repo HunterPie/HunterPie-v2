@@ -5,7 +5,9 @@ using HunterPie.Core.Settings.Common;
 
 namespace HunterPie.Features.Account.Config;
 
-[Configuration("ACCOUNT_STRING", "ICON_ACCOUNT")]
+[Configuration(name: "ACCOUNT_STRING",
+    icon: "ICON_ACCOUNT",
+    group: CommonConfigurationGroups.ACCOUNT)]
 internal class AccountConfig : ISettings
 {
     #region General settings

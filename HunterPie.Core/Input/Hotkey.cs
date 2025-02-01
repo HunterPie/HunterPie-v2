@@ -1,4 +1,4 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,7 @@ namespace HunterPie.Core.Input;
 // TODO: Refactor this because this is HunterPie v1 code and I hate it
 public class Hotkey
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
     private const int WM_HOTKEY = 0x0312;
 
     private static readonly Dictionary<int, Action> hotkeys = new();
@@ -62,7 +63,7 @@ public class Hotkey
         int[] hotkey = ParseStringToHotkeyCode(keys);
         if (hotkey is null)
         {
-            Log.Error($"{keys} is not a valid hotkey.");
+            Logger.Error($"{keys} is not a valid hotkey.");
             return -1;
         }
         else
@@ -82,7 +83,7 @@ public class Hotkey
             }
             else
             {
-                Log.Error($"Failed to register hotkey. {Marshal.GetLastWin32Error()}");
+                Logger.Error($"Failed to register hotkey. {Marshal.GetLastWin32Error()}");
                 return -1;
             }
         }
@@ -97,7 +98,7 @@ public class Hotkey
     {
         if (!Hotkeys.ContainsKey(id))
         {
-            Log.Info($"Failed to unregister hotkey with id: {id}. Hotkey not found!");
+            Logger.Info($"Failed to unregister hotkey with id: {id}. Hotkey not found!");
             return false;
         }
 
@@ -110,7 +111,7 @@ public class Hotkey
         }
         else
         {
-            Log.Error($"Failed to unregister hotkey. {Marshal.GetLastWin32Error()}");
+            Logger.Error($"Failed to unregister hotkey. {Marshal.GetLastWin32Error()}");
             _ = hotkeys.Remove(id);
             return true;
         }

@@ -1,11 +1,12 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Utils;
 
@@ -137,14 +138,16 @@ public class MHRChargeBlade : MHRMeleeWeapon, IChargeBlade
         remove => _onPhialsChange.Unhook(value);
     }
 
-    public MHRChargeBlade(IProcessManager process) : base(process, Weapon.ChargeBlade) { }
+    public MHRChargeBlade(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService, Weapon.ChargeBlade) { }
 
     [ScannableMethod]
-    private void GetData()
+    private async Task GetData()
     {
-        MHRChargeBladeStructure structure = Memory.Deref<MHRChargeBladeStructure>(
-            AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
-            AddressMap.Get<int[]>("CURRENT_WEAPON_OFFSETS")
+        MHRChargeBladeStructure structure = await Memory.DerefAsync<MHRChargeBladeStructure>(
+            address: AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("CURRENT_WEAPON_OFFSETS")
         );
 
         ShieldBuff = structure.ShieldBuff.ToAbnormalitySeconds();

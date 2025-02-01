@@ -92,6 +92,7 @@ public class InsectGlaiveController : IClassController<InsectGlaiveViewModel>
         ViewModel.PrimaryQueuedBuff = _weapon.PrimaryExtract;
         ViewModel.SecondaryQueuedBuff = _weapon.SecondaryExtract;
         ViewModel.ChargeTimer = _weapon.Charge;
-        ViewModel.ChargeType = _weapon.ChargeType; ;
+        ViewModel.ChargeType = _weapon.ChargeType;
+        ;
     }
 }

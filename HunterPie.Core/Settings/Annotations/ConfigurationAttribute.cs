@@ -10,18 +10,21 @@ public class ConfigurationAttribute : Attribute
 {
     public string Name { get; init; }
     public string Icon { get; init; }
+    public string Group { get; init; }
     public string? DependsOnFeature { get; init; }
-    public GameProcess AvailableGames { get; init; }
+    public GameProcessType AvailableGames { get; init; }
 
     public ConfigurationAttribute(
         string name,
         string icon,
+        string group,
         string? dependsOnFeature = null,
-        GameProcess availableGames = GameProcess.All
+        GameProcessType availableGames = GameProcessType.All
     )
     {
         Name = name;
         Icon = icon;
+        Group = group;
         DependsOnFeature = dependsOnFeature;
         AvailableGames = availableGames;
     }

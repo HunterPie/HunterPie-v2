@@ -6,16 +6,16 @@ internal static class AddressMapKeyWords
 {
     public enum AddressMapType
     {
-        Long,
-        VecInt32,
+        Pointer,
+        Offsets,
         Unknown
     }
 
     private static readonly Dictionary<string, AddressMapType> types = new()
     {
-        { "Address", AddressMapType.Long },
-        { "Offset", AddressMapType.VecInt32 },
-        { "Instruction", AddressMapType.VecInt32 },
+        { "Address", AddressMapType.Pointer },
+        { "Offset", AddressMapType.Offsets },
+        { "Instruction", AddressMapType.Offsets },
     };
 
     public static bool IsKeyWord(string word) => types.ContainsKey(word);

@@ -1,5 +1,5 @@
 ﻿using HunterPie.UI.Architecture;
-using HunterPie.UI.Logger;
+using HunterPie.UI.Logging.Entity;
 using System.Collections.ObjectModel;
 
 namespace HunterPie.UI.Logging.ViewModels;

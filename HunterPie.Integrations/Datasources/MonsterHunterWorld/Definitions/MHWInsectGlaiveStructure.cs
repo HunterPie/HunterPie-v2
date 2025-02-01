@@ -9,7 +9,7 @@ public struct MHWInsectGlaiveStructure
     /// <summary>
     /// Pointer to <see cref="MHWKinsectStructure"/>
     /// </summary>
-    [FieldOffset(0x2350)] public long KinsectPointer;
+    [FieldOffset(0x2350)] public nint KinsectPointer;
     [FieldOffset(0x2368)] public float AttackTimer;
     [FieldOffset(0x236C)] public float SpeedTimer;
     [FieldOffset(0x2370)] public float DefenseTimer;

@@ -13,7 +13,7 @@ namespace HunterPie.UI.Settings.Converter.Internal;
 #nullable enable
 internal class EnumConfigurationPropertyBuilder : IConfigurationPropertyBuilder
 {
-    public IConfigurationProperty Build(PropertyData data, GameProcess game)
+    public IConfigurationProperty Build(PropertyData data, GameProcessType game)
     {
         Type observableType = typeof(Observable<>);
         Type innerType = data.Value.GetType();

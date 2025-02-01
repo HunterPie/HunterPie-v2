@@ -3,7 +3,7 @@ using HunterPie.Core.Client.Configuration.Enums;
 using HunterPie.Core.Domain;
 using HunterPie.Core.Domain.DTO;
 using HunterPie.Core.Domain.Interfaces;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Data.Definitions;
 using HunterPie.Core.Game.Data.Repository;
@@ -15,6 +15,7 @@ using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
 using HunterPie.Core.Game.Services;
 using HunterPie.Core.Native.IPC.Models.Common;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.Common.Definition;
 using HunterPie.Integrations.Datasources.Common.Entity.Player;
 using HunterPie.Integrations.Datasources.Common.Entity.Player.Vitals;
@@ -48,8 +49,8 @@ public sealed class MHWPlayer : CommonPlayer
 
     #region Private fields
 
-    private long _playerSaveAddress;
-    private long _localPlayerAddress;
+    private nint _playerSaveAddress;
+    private nint _localPlayerAddress;
     private Stage _zoneId;
     private Weapon _weaponId = WeaponType.None;
     private readonly Dictionary<string, IAbnormality> _abnormalities = new();
@@ -65,7 +66,7 @@ public sealed class MHWPlayer : CommonPlayer
 
     #region Public Properties
 
-    public long PlayerSaveAddress
+    public nint PlayerSaveAddress
     {
         get => _playerSaveAddress;
         private set
@@ -179,87 +180,77 @@ public sealed class MHWPlayer : CommonPlayer
     public MHWTailraiders Tailraiders { get; } = new();
     #endregion
 
-    internal MHWPlayer(IProcessManager process) : base(process)
+    internal MHWPlayer(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService)
     {
-        _skillService = new MHWSkillService(process);
-        _weapon = CreateDefaultWeapon(process);
+        _skillService = new MHWSkillService(process, scanService);
+        _weapon = CreateDefaultWeapon();
     }
 
-    private IWeapon CreateDefaultWeapon(IProcessManager process)
+    private IWeapon CreateDefaultWeapon()
     {
-        var weapon = new MHWMeleeWeapon(process, _skillService, WeaponType.Greatsword);
-        ScanManager.Add(weapon);
+        var weapon = new MHWMeleeWeapon(
+            process: Process,
+            scanService: ScanService,
+            skillService: _skillService,
+            id: WeaponType.Greatsword
+        );
         return weapon;
     }
 
-    [ScannableMethod(typeof(ZoneData))]
-    private void GetZoneData()
+    [ScannableMethod]
+    private async Task GetZoneData()
     {
-        ZoneData data = new();
-
-        long zoneAddress = Process.Memory.Read(
-            AddressMap.GetAbsolute("ZONE_OFFSET"),
-            AddressMap.Get<int[]>("ZoneOffsets")
+        nint zoneAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("ZONE_OFFSET"),
+            offsets: AddressMap.Get<int[]>("ZoneOffsets")
         );
 
-        data.ZoneId = (Stage)Process.Memory.Read<int>(zoneAddress);
-
-        Next(ref data);
-
-        ZoneId = data.ZoneId;
+        ZoneId = (Stage)await Memory.ReadAsync<int>(zoneAddress);
     }
 
-    [ScannableMethod(typeof(PlayerInformationData))]
-    private void GetBasicData()
+    [ScannableMethod]
+    private async Task GetBasicData()
     {
-        PlayerInformationData data = new();
         if (ZoneId == Stage.MainMenu)
         {
             PlayerSaveAddress = 0;
             return;
         }
 
-        long firstSaveAddress = Process.Memory.Read(
-            AddressMap.GetAbsolute("LEVEL_OFFSET"),
-            AddressMap.Get<int[]>("LevelOffsets")
+        nint firstSaveAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("LEVEL_OFFSET"),
+            offsets: AddressMap.Get<int[]>("LevelOffsets")
         );
 
-        uint currentSaveSlot = Process.Memory.Read<uint>(firstSaveAddress + 0x44);
-        const long nextPlayerSave = 0x26CC00;
-        long currentPlayerSaveHeader =
-            Process.Memory.Read<long>(firstSaveAddress) + (nextPlayerSave * currentSaveSlot);
+        uint currentSaveSlot = await Memory.ReadAsync<uint>(firstSaveAddress + 0x44);
+        const nint nextPlayerSave = 0x26CC00;
+        nint currentPlayerSaveHeader = await Memory.ReadAsync<nint>(firstSaveAddress) + (nextPlayerSave * (nint)currentSaveSlot);
 
         if (currentPlayerSaveHeader == _playerSaveAddress)
             return;
 
-        data.Name = Process.Memory.Read(currentPlayerSaveHeader + 0x50, 32);
-        data.HighRank = Process.Memory.Read<short>(currentPlayerSaveHeader + 0x90);
-        data.MasterRank = Process.Memory.Read<short>(currentPlayerSaveHeader + 0xD4);
-        data.PlayTime = Process.Memory.Read<int>(currentPlayerSaveHeader + 0xA0);
-
-        Next(ref data);
-
-        Name = data.Name;
-        HighRank = data.HighRank;
-        MasterRank = data.MasterRank;
-        PlayTime = data.PlayTime;
-
+        Name = await Memory.ReadAsync(currentPlayerSaveHeader + 0x50, 32);
+        HighRank = await Memory.ReadAsync<short>(currentPlayerSaveHeader + 0x90);
+        MasterRank = await Memory.ReadAsync<short>(currentPlayerSaveHeader + 0xD4);
+        PlayTime = await Memory.ReadAsync<int>(currentPlayerSaveHeader + 0xA0);
         PlayerSaveAddress = currentPlayerSaveHeader;
     }
 
 
 
     [ScannableMethod]
-    private void GetPlayerHudData()
+    private async Task GetPlayerHudData()
     {
-        long basicPlayerDataPtr = Process.Memory.Read(
-            AddressMap.GetAbsolute("EQUIPMENT_ADDRESS"),
-            AddressMap.Get<int[]>("PLAYER_BASIC_INFORMATION_OFFSETS")
+        nint basicPlayerDataPtr = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("EQUIPMENT_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("PLAYER_BASIC_INFORMATION_OFFSETS")
         );
 
-        MHWHudStructure hudStructure = Process.Memory.Read<MHWHudStructure>(basicPlayerDataPtr);
+        MHWHudStructure hudStructure = await Memory.ReadAsync<MHWHudStructure>(basicPlayerDataPtr);
 
-        MHWHealingStructure totalHealings = Process.Memory.Read<MHWHealingStructure>(hudStructure.HealingArrayPointer + 0xEBB0, 4)
+        MHWHealingStructure totalHealing = (await Memory.ReadAsync<MHWHealingStructure>(hudStructure.HealingArrayPointer + 0xEBB0, 4))
                                                            .ToTotal();
 
         var healthData = new HealthData
@@ -267,7 +258,7 @@ public sealed class MHWPlayer : CommonPlayer
             MaxHealth = hudStructure.MaxHealth,
             Health = hudStructure.Health,
             RecoverableHealth = hudStructure.RecoverableHealth,
-            Heal = hudStructure.Health + totalHealings.MaxHeal - totalHealings.Heal,
+            Heal = hudStructure.Health + totalHealing.MaxHeal - totalHealing.Heal,
             MaxPossibleHealth = Math.Max(_skillService.ToMaximumHealthPossible(), hudStructure.MaxHealth),
         };
 
@@ -284,85 +275,77 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetWeaponData()
+    private async Task GetWeaponData()
     {
         PlayerEquipmentData data = new();
 
         if (!IsLoggedOn)
             return;
 
-        long address = Process.Memory.Read(
-            AddressMap.GetAbsolute("WEAPON_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_OFFSETS")
+        nint address = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("WEAPON_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_OFFSETS")
         );
 
-        data.WeaponType = (WeaponType)Process.Memory.Read<byte>(address);
+        data.WeaponType = (WeaponType)await Memory.ReadAsync<byte>(address);
 
         if (data.WeaponType == _weaponId)
             return;
 
-        if (Weapon is Scannable scannable)
-            ScanManager.Remove(scannable);
+        if (Weapon is IDisposable disposable)
+            disposable.Dispose();
 
         IWeapon? weaponInstance = data.WeaponType switch
         {
-            WeaponType.ChargeBlade => new MHWChargeBlade(Process, _skillService),
-            WeaponType.InsectGlaive => new MHWInsectGlaive(Process, _skillService),
+            WeaponType.ChargeBlade => new MHWChargeBlade(Process, _skillService, ScanService),
+            WeaponType.InsectGlaive => new MHWInsectGlaive(Process, _skillService, ScanService),
             WeaponType.Bow => new MHWBow(),
             WeaponType.HeavyBowgun => new MHWHeavyBowgun(),
             WeaponType.LightBowgun => new MHWLightBowgun(),
-            WeaponType.DualBlades => new MHWDualBlades(Process, _skillService),
-            WeaponType.SwitchAxe => new MHWSwitchAxe(Process, _skillService),
-            WeaponType.Longsword => new MHWLongSword(Process, _skillService),
+            WeaponType.DualBlades => new MHWDualBlades(Process, _skillService, ScanService),
+            WeaponType.SwitchAxe => new MHWSwitchAxe(Process, _skillService, ScanService),
+            WeaponType.Longsword => new MHWLongSword(Process, _skillService, ScanService),
             WeaponType.Greatsword
                 or WeaponType.SwordAndShield
                 or WeaponType.Hammer
                 or WeaponType.HuntingHorn
                 or WeaponType.Lance
                 or WeaponType.GunLance
-                or WeaponType.GunLance => new MHWMeleeWeapon(Process, _skillService, data.WeaponType),
+                or WeaponType.GunLance => new MHWMeleeWeapon(Process, ScanService, _skillService, data.WeaponType),
             _ => null
         };
 
-        switch (weaponInstance)
-        {
-            case null:
-                return;
-
-            case Scannable weaponScannable:
-                ScanManager.Add(weaponScannable);
-                break;
-        }
+        if (weaponInstance is not { })
+            return;
 
         Weapon = weaponInstance;
-
         _weaponId = data.WeaponType;
     }
 
     [ScannableMethod]
-    private void GetParty()
+    private async Task GetParty()
     {
-        MHWQuestStructure quest = Memory.Deref<MHWQuestStructure>(
-            AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
-            AddressMap.GetOffsets("QUEST_DATA_OFFSETS")
+        MHWQuestStructure quest = await Memory.DerefAsync<MHWQuestStructure>(
+            address: AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
+            offsets: AddressMap.GetOffsets("QUEST_DATA_OFFSETS")
         );
 
         if (quest.State.IsQuestOver() || quest.Id <= 0)
             return;
 
-        long partyInformationPtr = Process.Memory.Read(
-            AddressMap.GetAbsolute("PARTY_ADDRESS"),
-            AddressMap.Get<int[]>("PARTY_OFFSETS")
+        nint partyInformationPtr = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("PARTY_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("PARTY_OFFSETS")
         );
 
-        long damageInformation = Process.Memory.Read(
-            AddressMap.GetAbsolute("DAMAGE_ADDRESS"),
-            AddressMap.Get<int[]>("DAMAGE_OFFSETS")
+        nint damageInformation = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("DAMAGE_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("DAMAGE_OFFSETS")
         );
 
-        int partySize = Process.Memory.Deref<int>(
-            AddressMap.GetAbsolute("SESSION_OFFSET"),
-            AddressMap.Get<int[]>("SESSION_PARTY_OFFSETS")
+        int partySize = await Memory.DerefAsync<int>(
+            address: AddressMap.GetAbsolute("SESSION_OFFSET"),
+            offsets: AddressMap.Get<int[]>("SESSION_PARTY_OFFSETS")
         );
 
         if (partySize is 0)
@@ -384,15 +367,15 @@ public sealed class MHWPlayer : CommonPlayer
 
         _party.Remove(0);
 
-        MHWPartyMemberStructure[] partyMembers = Process.Memory.Read<MHWPartyMemberStructure>(partyInformationPtr, 4);
+        MHWPartyMemberStructure[] partyMembers = await Memory.ReadAsync<MHWPartyMemberStructure>(partyInformationPtr, 4);
 
-        long localPlayerReference = 0;
+        nint localPlayerReference = 0;
         int index = -1;
         foreach (MHWPartyMemberStructure partyMember in partyMembers)
         {
             index++;
 
-            string name = Process.Memory.Read(partyMember.Address + 0x49, 32);
+            string name = await Memory.ReadAsync(partyMember.Address + 0x49, 32);
 
             bool isInParty = !string.IsNullOrEmpty(name);
 
@@ -402,7 +385,7 @@ public sealed class MHWPlayer : CommonPlayer
                 continue;
             }
 
-            MHWPartyMemberLevelStructure levels = Process.Memory.Read<MHWPartyMemberLevelStructure>(partyMember.Address + 0x70);
+            MHWPartyMemberLevelStructure levels = await Memory.ReadAsync<MHWPartyMemberLevelStructure>(partyMember.Address + 0x70);
 
             bool isLocalPlayer = name == Name;
 
@@ -412,8 +395,8 @@ public sealed class MHWPlayer : CommonPlayer
             var data = new MHWPartyMemberData
             {
                 Name = name,
-                Weapon = isLocalPlayer ? _weaponId : (WeaponType)Process.Memory.Read<byte>(partyMember.Address + 0x7C),
-                Damage = Process.Memory.Read<int>(damageInformation + (index * 0x2A0)),
+                Weapon = isLocalPlayer ? _weaponId : (WeaponType)await Memory.ReadAsync<byte>(partyMember.Address + 0x7C),
+                Damage = await Memory.ReadAsync<int>(damageInformation + (index * 0x2A0)),
                 Slot = index,
                 IsMyself = isLocalPlayer,
                 MasterRank = levels.MasterRank
@@ -426,15 +409,15 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetHarvestBoxData()
+    private async Task GetHarvestBoxData()
     {
         if (PlayerSaveAddress.IsNullPointer())
             return;
 
-        long harvestBoxPtr = PlayerSaveAddress + 0x103068;
+        nint harvestBoxPtr = PlayerSaveAddress + 0x103068;
 
-        MHWFertilizerStructure[] fertilizers = Memory.Read<MHWFertilizerStructure>(harvestBoxPtr, 4);
-        MHWItemStructure[] harvestBoxItems = Memory.Read<MHWItemStructure>(harvestBoxPtr + 0x50, 50);
+        MHWFertilizerStructure[] fertilizers = await Memory.ReadAsync<MHWFertilizerStructure>(harvestBoxPtr, 4);
+        MHWItemStructure[] harvestBoxItems = await Memory.ReadAsync<MHWItemStructure>(harvestBoxPtr + 0x50, 50);
 
         var data = new MHWHarvestBoxData(
             Items: harvestBoxItems,
@@ -445,12 +428,12 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetSteamFuel()
+    private async Task GetSteamFuel()
     {
         if (PlayerSaveAddress.IsNullPointer())
             return;
 
-        MHWSteamFuelStructure structure = Memory.Read<MHWSteamFuelStructure>(PlayerSaveAddress + 0x102FDC);
+        MHWSteamFuelStructure structure = await Memory.ReadAsync<MHWSteamFuelStructure>(PlayerSaveAddress + 0x102FDC);
 
         var data = new MHWSteamFuelData(
             NaturalFuel: structure.NaturalFuel,
@@ -461,14 +444,14 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetArgosy()
+    private async Task GetArgosy()
     {
         if (PlayerSaveAddress.IsNullPointer())
             return;
 
-        long argosyPtr = PlayerSaveAddress + 0x1034C0;
+        nint argosyPtr = PlayerSaveAddress + 0x1034C0;
 
-        byte argosyDays = Memory.Read<byte>(argosyPtr);
+        byte argosyDays = await Memory.ReadAsync<byte>(argosyPtr);
         bool isInTown = argosyDays < 250;
 
         if (!isInTown)
@@ -483,16 +466,18 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetTailraiders()
+    private async Task GetTailraiders()
     {
         if (PlayerSaveAddress.IsNullPointer())
             return;
 
-        long tailraidersPtr = PlayerSaveAddress + 0x1034DC;
+        nint tailraidersPtr = PlayerSaveAddress + 0x1034DC;
 
-        byte tailraidersQuests = Memory.Read<byte>(tailraidersPtr);
+        byte tailraidersQuests = await Memory.ReadAsync<byte>(tailraidersPtr);
         bool isDeployed = tailraidersQuests != byte.MaxValue;
-        int questsLeft = isDeployed ? Tailraiders.MaxDays - tailraidersQuests : 0;
+        int questsLeft = isDeployed
+            ? Tailraiders.MaxDays - tailraidersQuests
+            : 0;
 
         var data = new MHWTailraidersData(
             QuestsLeft: questsLeft,
@@ -503,24 +488,24 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetMantlesData()
+    private async Task GetMantlesData()
     {
-        long address = Process.Memory.Read(
-            AddressMap.GetAbsolute("WEAPON_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_OFFSETS")
+        nint address = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("WEAPON_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_OFFSETS")
         );
-        SpecializedToolType[] ids = Process.Memory.Read<int>(address + 0x34, 2)
+        SpecializedToolType[] ids = (await Process.Memory.ReadAsync<int>(address + 0x34, 2))
             .Select(e => (SpecializedToolType)e)
             .ToArray();
 
-        long equipmentAddress = Process.Memory.Read(
+        nint equipmentAddress = await Memory.ReadAsync(
             AddressMap.GetAbsolute("EQUIPMENT_ADDRESS"),
             AddressMap.Get<int[]>("EQUIPMENT_OFFSETS")
         );
 
         const int specializedTools = 20;
-        float[] cooldowns = Process.Memory.Read<float>(equipmentAddress + 0x99C, specializedTools * 2);
-        float[] timers = Process.Memory.Read<float>(equipmentAddress + 0xA8C, specializedTools * 2);
+        float[] cooldowns = await Memory.ReadAsync<float>(equipmentAddress + 0x99C, specializedTools * 2);
+        float[] timers = await Memory.ReadAsync<float>(equipmentAddress + 0xA8C, specializedTools * 2);
 
         for (int i = 0; i < Tools.Length; i++)
         {
@@ -539,11 +524,11 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetAbnormalitiesCleanup()
+    private async Task GetAbnormalitiesCleanup()
     {
-        long abnormalityBaseAddress = Process.Memory.Read(
-            AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
-            AddressMap.Get<int[]>("ABNORMALITY_OFFSETS")
+        nint abnormalityBaseAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("ABNORMALITY_OFFSETS")
         );
 
         if (!InHuntingZone || abnormalityBaseAddress == 0)
@@ -551,25 +536,28 @@ public sealed class MHWPlayer : CommonPlayer
     }
 
     [ScannableMethod]
-    private void GetAbnormalities()
+    private async Task GetAbnormalities()
     {
         if (!InHuntingZone)
             return;
 
-        long abnormalityBaseAddress = Process.Memory.Read(
-            AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
-            AddressMap.Get<int[]>("ABNORMALITY_OFFSETS")
+        nint abnormalityBaseAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("ABNORMALITY_OFFSETS")
         );
 
-        MHWAbnormalityStructure[] abnormalities = Process.Memory.Read<MHWAbnormalityStructure>(abnormalityBaseAddress + 0x38, 75);
+        MHWAbnormalityStructure[] abnormalities = await Memory.ReadAsync<MHWAbnormalityStructure>(abnormalityBaseAddress + 0x38, 75);
 
         GetHuntingHornAbnormalities(abnormalities);
         GetOrchestraAbnormalities(abnormalities);
-        GetDebuffAbnormalities(abnormalityBaseAddress);
-        GetConsumableAbnormalities(abnormalityBaseAddress);
-        GetSkillAbnormalities(abnormalityBaseAddress);
-        GetFoodAbnormalities();
-        GetGearAbnormalities();
+
+        Task.WaitAll(
+            GetDebuffAbnormalitiesAsync(abnormalityBaseAddress),
+            GetConsumableAbnormalitiesAsync(abnormalityBaseAddress),
+            GetSkillAbnormalitiesAsync(abnormalityBaseAddress),
+            GetFoodAbnormalitiesAsync(),
+            GetGearAbnormalitiesAsync()
+        );
     }
 
     private void GetHuntingHornAbnormalities(MHWAbnormalityStructure[] buffs)
@@ -614,7 +602,7 @@ public sealed class MHWPlayer : CommonPlayer
         }
     }
 
-    private void GetDebuffAbnormalities(long baseAddress)
+    private async Task GetDebuffAbnormalitiesAsync(nint baseAddress)
     {
         AbnormalityDefinition[] abnormalitySchemas = AbnormalityRepository.FindAllAbnormalitiesBy(GameType.World, AbnormalityGroup.DEBUFFS);
 
@@ -625,11 +613,11 @@ public sealed class MHWPlayer : CommonPlayer
             int abnormSubId = abnormalitySchema.DependsOn switch
             {
                 0 => 0,
-                _ => Process.Memory.Read<int>(baseAddress + abnormalitySchema.DependsOn)
+                _ => await Memory.ReadAsync<int>(baseAddress + abnormalitySchema.DependsOn)
             };
 
             if (abnormSubId == abnormalitySchema.WithValue)
-                structure = Process.Memory.Read<MHWAbnormalityStructure>(baseAddress + abnormalitySchema.Offset);
+                structure = await Memory.ReadAsync<MHWAbnormalityStructure>(baseAddress + abnormalitySchema.Offset);
 
             HandleAbnormality<MHWAbnormality, MHWAbnormalityStructure>(
                 _abnormalities,
@@ -640,7 +628,7 @@ public sealed class MHWPlayer : CommonPlayer
         }
     }
 
-    private void GetConsumableAbnormalities(long baseAddress)
+    private async Task GetConsumableAbnormalitiesAsync(nint baseAddress)
     {
         AbnormalityDefinition[] abnormalitySchemas = AbnormalityRepository.FindAllAbnormalitiesBy(GameType.World, AbnormalityGroup.CONSUMABLES);
 
@@ -651,12 +639,12 @@ public sealed class MHWPlayer : CommonPlayer
             int abnormSubId = abnormalitySchema.DependsOn switch
             {
                 0 => 0,
-                _ => Memory.Read<int>(baseAddress + abnormalitySchema.DependsOn)
+                _ => await Memory.ReadAsync<int>(baseAddress + abnormalitySchema.DependsOn)
             };
 
             if (abnormSubId == abnormalitySchema.WithValue)
             {
-                structure = Memory.Read<MHWAbnormalityStructure>(baseAddress + abnormalitySchema.Offset);
+                structure = await Memory.ReadAsync<MHWAbnormalityStructure>(baseAddress + abnormalitySchema.Offset);
 
                 if (abnormalitySchema.IsInfinite)
                     structure.Timer = 1;
@@ -671,13 +659,13 @@ public sealed class MHWPlayer : CommonPlayer
         }
     }
 
-    private void GetSkillAbnormalities(long baseAddress)
+    private async Task GetSkillAbnormalitiesAsync(nint baseAddress)
     {
         AbnormalityDefinition[] abnormalitySchemas = AbnormalityRepository.FindAllAbnormalitiesBy(GameType.World, AbnormalityGroup.SKILLS);
 
         foreach (AbnormalityDefinition abnormalitySchema in abnormalitySchemas)
         {
-            MHWAbnormalityStructure structure = Process.Memory.Read<MHWAbnormalityStructure>(baseAddress + abnormalitySchema.Offset);
+            MHWAbnormalityStructure structure = await Memory.ReadAsync<MHWAbnormalityStructure>(baseAddress + abnormalitySchema.Offset);
 
             HandleAbnormality<MHWAbnormality, MHWAbnormalityStructure>(
                 _abnormalities,
@@ -688,17 +676,17 @@ public sealed class MHWPlayer : CommonPlayer
         }
     }
 
-    private void GetFoodAbnormalities()
+    private async Task GetFoodAbnormalitiesAsync()
     {
-        long canteenAddress = Process.Memory.Read(
-            AddressMap.GetAbsolute("CANTEEN_ADDRESS"),
-            AddressMap.Get<int[]>("ABNORMALITY_CANTEEN_OFFSETS")
+        nint canteenAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("CANTEEN_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("ABNORMALITY_CANTEEN_OFFSETS")
         );
 
         AbnormalityDefinition[] abnormalitySchemas = AbnormalityRepository.FindAllAbnormalitiesBy(GameType.World, AbnormalityGroup.FOODS);
         foreach (AbnormalityDefinition abnormalitySchema in abnormalitySchemas)
         {
-            MHWAbnormalityStructure structure = Process.Memory.Read<MHWAbnormalityStructure>(canteenAddress + abnormalitySchema.Offset);
+            MHWAbnormalityStructure structure = await Memory.ReadAsync<MHWAbnormalityStructure>(canteenAddress + abnormalitySchema.Offset);
 
             HandleAbnormality<MHWAbnormality, MHWAbnormalityStructure>(
                 _abnormalities,
@@ -709,17 +697,17 @@ public sealed class MHWPlayer : CommonPlayer
         }
     }
 
-    private void GetGearAbnormalities()
+    private async Task GetGearAbnormalitiesAsync()
     {
-        long gearAddress = Process.Memory.Read(
-            AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
-            AddressMap.Get<int[]>("ABNORMALITY_GEAR_OFFSETS")
+        nint gearAddress = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("ABNORMALITY_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("ABNORMALITY_GEAR_OFFSETS")
         );
 
         AbnormalityDefinition[] abnormalitySchemas = AbnormalityRepository.FindAllAbnormalitiesBy(GameType.World, AbnormalityGroup.GEARS);
         foreach (AbnormalityDefinition abnormalitySchema in abnormalitySchemas)
         {
-            MHWAbnormalityStructure structure = Process.Memory.Read<MHWAbnormalityStructure>(gearAddress + abnormalitySchema.Offset);
+            MHWAbnormalityStructure structure = await Memory.ReadAsync<MHWAbnormalityStructure>(gearAddress + abnormalitySchema.Offset);
 
             HandleAbnormality<MHWAbnormality, MHWAbnormalityStructure>(
                 _abnormalities,

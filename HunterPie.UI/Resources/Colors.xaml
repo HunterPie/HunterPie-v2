@@ -6,6 +6,13 @@
         <GradientStop Color="#FF10B9DE" Offset="1"/>
     </LinearGradientBrush>
 
+    <LinearGradientBrush x:Key="HunterPie::Accent::Horizontal"  
+                         EndPoint="1,1" 
+                         StartPoint="0,1">
+        <GradientStop Color="#FF4B8EEE" Offset="0.863"/>
+        <GradientStop Color="#FF10B9DE" Offset="1"/>
+    </LinearGradientBrush>
+
     <LinearGradientBrush x:Key="HUNTERPIE_ACCENT_COLOR_TRANSPARENT" EndPoint="1,1" StartPoint="0,1">
         <GradientStop Color="#504B8EEE"/>
         <GradientStop Color="#5010B9DE" Offset="1"/>

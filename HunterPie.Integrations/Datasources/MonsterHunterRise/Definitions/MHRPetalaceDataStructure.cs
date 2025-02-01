@@ -6,5 +6,5 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 public struct MHRPetalaceDataStructure
 {
     [FieldOffset(0x28)]
-    public long Stats;
+    public nint Stats;
 }

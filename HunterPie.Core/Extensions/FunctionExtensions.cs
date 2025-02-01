@@ -9,16 +9,20 @@ public static class FunctionExtensions
     public static Action<T> Debounce<T>(this Action<T> func, int milliseconds = 300)
     {
         int last = 0;
-        return (T param) =>
+
+        void Action(T param)
         {
             int current = Interlocked.Increment(ref last);
-            _ = Task.Delay(milliseconds).ContinueWith(task =>
-            {
-                if (current == last)
-                    func(param);
+            _ = Task.Delay(milliseconds)
+                .ContinueWith(task =>
+                {
+                    if (current == last)
+                        func(param);
 
-                task.Dispose();
-            });
-        };
+                    task.Dispose();
+                });
+        }
+
+        return Action;
     }
 }

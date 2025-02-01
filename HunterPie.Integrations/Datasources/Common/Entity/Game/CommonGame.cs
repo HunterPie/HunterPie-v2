@@ -1,7 +1,7 @@
 ﻿using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
 using HunterPie.Core.Domain.Interfaces;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Enemy;
 using HunterPie.Core.Game.Entity.Game;
@@ -11,6 +11,7 @@ using HunterPie.Core.Game.Entity.Player;
 using HunterPie.Core.Game.Events;
 using HunterPie.Core.Game.Services;
 using HunterPie.Core.Game.Services.Monster;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.Common.Monster;
 
 namespace HunterPie.Integrations.Datasources.Common.Entity.Game;
@@ -99,13 +100,16 @@ public abstract class CommonGame : Scannable, IGame, IEventDispatcher
         remove => _onWorldTimeChange.Unhook(value);
     }
 
-    protected CommonGame(IProcessManager process) : base(process)
+    protected CommonGame(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService)
     {
         _targetDetectionService = new SimpleTargetDetectionService(this);
     }
 
-    public virtual void Dispose()
+    public override void Dispose()
     {
+        base.Dispose();
         Monsters.TryCast<IDisposable>()
                 .DisposeAll();
 

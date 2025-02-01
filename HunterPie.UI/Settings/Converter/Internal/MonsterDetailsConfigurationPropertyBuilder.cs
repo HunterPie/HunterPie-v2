@@ -9,7 +9,7 @@ namespace HunterPie.UI.Settings.Converter.Internal;
 
 public class MonsterDetailsConfigurationPropertyBuilder : IConfigurationPropertyBuilder
 {
-    public IConfigurationProperty Build(PropertyData data, GameProcess game)
+    public IConfigurationProperty Build(PropertyData data, GameProcessType game)
     {
         if (data.Value is not MonsterDetailsConfiguration value)
             throw new ArgumentException($"Property must be of type {nameof(MonsterDetailsConfiguration)}");

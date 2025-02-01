@@ -1,12 +1,12 @@
 ﻿using HunterPie.Core.Architecture;
 using HunterPie.Core.Client.Configuration.Overlay;
-using HunterPie.Core.Events;
 using HunterPie.Core.Game;
 using HunterPie.Core.Game.Entity.Game;
 using HunterPie.Core.Input;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.Core.Settings;
 using HunterPie.UI.Overlay.Components;
+using System;
 using System.Collections.Generic;
 using ClientConfig = HunterPie.Core.Client.ClientConfig;
 
@@ -15,6 +15,8 @@ namespace HunterPie.UI.Overlay;
 #nullable enable
 public class WidgetManager : Bindable
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
+
     private IContext? _context;
     private bool _isDesignModeEnabled;
     private bool _isGameFocused;
@@ -48,16 +50,16 @@ public class WidgetManager : Bindable
     internal static void Hook(IContext context)
     {
         Instance._context = context;
-        context.Process.OnGameFocus += OnGameFocus;
-        context.Process.OnGameUnfocus += OnGameUnfocus;
+        context.Process.Focus += OnGameFocus;
+        context.Process.Blur += OnGameBlur;
         context.Game.OnHudStateChange += OnHudStateChange;
     }
 
     private static void OnHudStateChange(object? sender, IGame e) => Instance.IsGameHudOpen = e.IsHudOpen;
 
-    private static void OnGameUnfocus(object? sender, ProcessEventArgs e) => Instance.IsGameFocused = false;
+    private static void OnGameBlur(object? sender, EventArgs e) => Instance.IsGameFocused = false;
 
-    private static void OnGameFocus(object? sender, ProcessEventArgs e) => Instance.IsGameFocused = true;
+    private static void OnGameFocus(object? sender, EventArgs e) => Instance.IsGameFocused = true;
 
     public static bool Register<T, TK>(T widget) where T : IWidgetWindow, IWidget<TK>
                                                 where TK : IWidgetSettings
@@ -69,7 +71,7 @@ public class WidgetManager : Bindable
         Instance._widgets.Add(widget, wnd);
         wnd.Show();
 
-        Log.Debug($"Added new widget: {widget.Title}");
+        Logger.Debug($"Added new widget: {widget.Title}");
 
         return true;
     }
@@ -91,8 +93,8 @@ public class WidgetManager : Bindable
         if (Instance._context is null)
             return;
 
-        Instance._context.Process.OnGameFocus -= OnGameFocus;
-        Instance._context.Process.OnGameUnfocus -= OnGameUnfocus;
+        Instance._context.Process.Focus -= OnGameFocus;
+        Instance._context.Process.Blur -= OnGameBlur;
         Instance._context.Game.OnHudStateChange -= OnHudStateChange;
         Instance._context = null;
     }

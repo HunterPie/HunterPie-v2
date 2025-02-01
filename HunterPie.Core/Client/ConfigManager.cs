@@ -2,7 +2,7 @@
 using HunterPie.Core.Client.Observer;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Json;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +15,8 @@ namespace HunterPie.Core.Client;
 
 public class ConfigManager
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
+
     private static readonly FileSystemWatcher _fileSystemWatcher = new()
     {
         Path = ClientInfo.ClientPath,
@@ -55,7 +57,7 @@ public class ConfigManager
 
     internal static void Initialize()
     {
-        Action<string> reloadSetting = (string path) => Reload(path);
+        Action<string> reloadSetting = Reload;
         Action<string> debounceReload = reloadSetting.Debounce(200);
 
         _fileSystemWatcher.Changed += (_, args) =>
@@ -81,14 +83,14 @@ public class ConfigManager
 
         if (!Settings.ContainsKey(path))
         {
-            Log.Warn("'{0}' not registered in ConfigManager.", path);
+            Logger.Warning($"'{path}' not registered in ConfigManager.");
             return;
         }
 
         if (!File.Exists(path))
         {
             string fileName = Path.GetFileName(path);
-            Log.Error("{0} is missing. Creating a new one.", fileName);
+            Logger.Error($"'{fileName}' not registered in ConfigManager.");
 
             WriteSettings(path);
         }
@@ -103,7 +105,7 @@ public class ConfigManager
 
         if (!Settings.ContainsKey(path))
         {
-            Log.Warn($"'{path}' not registered in ConfigManager.");
+            Logger.Warning($"'{path}' not registered in ConfigManager.");
             return;
         }
 
@@ -127,7 +129,7 @@ public class ConfigManager
             }
             catch (Exception err)
             {
-                Log.Error(err.ToString());
+                Logger.Error(err.ToString());
             }
     }
 

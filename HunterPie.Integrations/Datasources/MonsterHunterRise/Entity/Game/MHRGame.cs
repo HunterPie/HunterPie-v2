@@ -1,7 +1,7 @@
 ﻿
 using HunterPie.Core.Address.Map;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Enemy;
 using HunterPie.Core.Game.Entity.Game.Chat;
@@ -13,6 +13,8 @@ using HunterPie.Core.Game.Services;
 using HunterPie.Core.Native.IPC.Handlers.Internal.Damage;
 using HunterPie.Core.Native.IPC.Handlers.Internal.Damage.Models;
 using HunterPie.Core.Native.IPC.Models.Common;
+using HunterPie.Core.Scan.Service;
+using HunterPie.Core.Utils;
 using HunterPie.Integrations.Datasources.Common;
 using HunterPie.Integrations.Datasources.Common.Entity.Game;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
@@ -29,10 +31,9 @@ using System.Text;
 
 namespace HunterPie.Integrations.Datasources.MonsterHunterRise.Entity.Game;
 
-#pragma warning disable IDE0051 // Remove unused private members
 public sealed class MHRGame : CommonGame
 {
-    public const uint MAXIMUM_MONSTER_ARRAY_SIZE = 5;
+    public const int MAXIMUM_MONSTER_ARRAY_SIZE = 5;
     public const int TRAINING_ROOM_ID = 5;
 
     private readonly MHRChat _chat = new();
@@ -41,8 +42,8 @@ public sealed class MHRGame : CommonGame
     private (int, DateTime) _lastTeleport = (0, DateTime.Now);
     private bool _isHudOpen;
     private DateTime _lastDamageUpdate = DateTime.MinValue;
-    private readonly Dictionary<long, IMonster> _monsters = new();
-    private readonly Dictionary<long, EntityDamageData[]> _damageDone = new();
+    private readonly Dictionary<IntPtr, IMonster> _monsters = new();
+    private readonly Dictionary<IntPtr, EntityDamageData[]> _damageDone = new();
 
     public override IPlayer Player => _player;
     public override List<IMonster> Monsters { get; } = new();
@@ -82,14 +83,11 @@ public sealed class MHRGame : CommonGame
 
     public override IAbnormalityCategorizationService AbnormalityCategorizationService { get; } = new MHRAbnormalityCategorizationService();
 
-    public MHRGame(IProcessManager process) : base(process)
+    public MHRGame(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService)
     {
-        _player = new MHRPlayer(process);
-
-        ScanManager.Add(
-            this,
-            Player as Scannable
-        );
+        _player = new MHRPlayer(process, scanService);
 
         HookEvents();
     }
@@ -108,27 +106,27 @@ public sealed class MHRGame : CommonGame
     }
 
     [ScannableMethod]
-    private void ScanChat()
+    private async Task ScanChat()
     {
-        long chatArrayPtr = Process.Memory.Read(
-            AddressMap.GetAbsolute("CHAT_ADDRESS"),
-            AddressMap.Get<int[]>("CHAT_OFFSETS")
+        IntPtr chatArrayPtr = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("CHAT_ADDRESS"),
+            offsets: AddressMap.GetOffsets("CHAT_OFFSETS")
         );
-        long chatArray = Process.Memory.Read<long>(chatArrayPtr);
-        int chatCount = Process.Memory.Read<int>(chatArrayPtr + 0x8);
+        IntPtr chatArray = await Memory.ReadAsync<IntPtr>(chatArrayPtr);
+        int chatCount = await Memory.ReadAsync<int>(chatArrayPtr + 0x8);
 
         if (chatCount <= 0)
             return;
 
-        long[] chatMessagePtrs = Process.Memory.Read<long>(chatArray + 0x20, (uint)chatCount);
+        IntPtr[] chatMessagePtrs = await Memory.ReadAsync<IntPtr>(chatArray + 0x20, chatCount);
 
         bool isChatOpen = false;
 
         for (int i = 0; i < chatCount; i++)
         {
-            long messagePtr = chatMessagePtrs[i];
+            IntPtr messagePtr = chatMessagePtrs[i];
 
-            MHRChatMessageStructure message = Process.Memory.Read<MHRChatMessageStructure>(messagePtr);
+            MHRChatMessageStructure message = await Memory.ReadAsync<MHRChatMessageStructure>(messagePtr);
 
             if (message.Type is not 0 and not 1)
                 continue;
@@ -139,26 +137,26 @@ public sealed class MHRGame : CommonGame
             if (_chat.ContainsMessage(messagePtr))
                 continue;
 
-            MHRChatMessage messageData = DerefChatMessage(message);
+            MHRChatMessage messageData = await DerefChatMessageAsync(message);
 
             _chat.AddMessage(messagePtr, messageData);
         }
 
         if (!isChatOpen)
-            isChatOpen |= Process.Memory.Deref<byte>(
-                AddressMap.GetAbsolute("CHAT_UI_ADDRESS"),
-                AddressMap.Get<int[]>("CHAT_UI_OFFSETS")
+            isChatOpen |= await Memory.DerefAsync<byte>(
+                address: AddressMap.GetAbsolute("CHAT_UI_ADDRESS"),
+                offsets: AddressMap.GetOffsets("CHAT_UI_OFFSETS")
             ) == 1;
 
         _chat.SetChatState(isChatOpen);
     }
 
     [ScannableMethod]
-    private void GetElapsedTime()
+    private async Task GetElapsedTime()
     {
-        float elapsedTime = Process.Memory.Deref<float>(
-            AddressMap.GetAbsolute("QUEST_ADDRESS"),
-            AddressMap.Get<int[]>("QUEST_TIMER_OFFSETS")
+        float elapsedTime = await Memory.DerefAsync<float>(
+            address: AddressMap.GetAbsolute("QUEST_ADDRESS"),
+            offsets: AddressMap.GetOffsets("QUEST_TIMER_OFFSETS")
         );
 
         TimeElapsed = elapsedTime > 0
@@ -171,16 +169,16 @@ public sealed class MHRGame : CommonGame
     }
 
     [ScannableMethod]
-    private void GetWorldData()
+    private async Task GetWorldData()
     {
-        long timersArrayPtr = Memory.Deref<long>(
+        IntPtr timersArrayPtr = await Memory.DerefAsync<IntPtr>(
             address: AddressMap.GetAbsolute("STAGE_MANAGER_ADDRESS"),
             offsets: AddressMap.GetOffsets("WORLD_TIME_OFFSETS")
         );
-        IReadOnlyCollection<MHRWorldTimeStructure> timers = Memory.ReadListOfPtrsSafe<MHRWorldTimeStructure>(
+        List<MHRWorldTimeStructure> timers = Memory.ReadListOfPtrsSafeAsync<MHRWorldTimeStructure>(
            address: timersArrayPtr,
            size: 3
-        );
+        ).Collect();
         MHRWorldTimeStructure lastTimer = timers.LastOrDefault(default(MHRWorldTimeStructure));
 
         if (lastTimer is not { Hours: <= 24 and >= 0, Minutes: <= 60 and >= 0, Seconds: <= 60 and >= 0 })
@@ -190,15 +188,15 @@ public sealed class MHRGame : CommonGame
     }
 
     [ScannableMethod]
-    private void GetQuest()
+    private async Task GetQuest()
     {
-        MHRQuestStructure questStructure = Memory.Deref<MHRQuestStructure>(
-            AddressMap.GetAbsolute("QUEST_ADDRESS"),
-            AddressMap.GetOffsets("QUEST_OFFSETS")
+        MHRQuestStructure questStructure = await Memory.DerefAsync<MHRQuestStructure>(
+            address: AddressMap.GetAbsolute("QUEST_ADDRESS"),
+            offsets: AddressMap.GetOffsets("QUEST_OFFSETS")
         );
 
-        MHRQuestDataStructure questData = Memory.Read<MHRQuestDataStructure>(questStructure.QuestDataPointer);
-        MHRQuestData? currentQuest = questData.GetCurrentQuest(Process);
+        MHRQuestDataStructure questData = await Memory.ReadAsync<MHRQuestDataStructure>(questStructure.QuestDataPointer);
+        MHRQuestData? currentQuest = await questData.GetCurrentQuestAsync(Memory);
 
         var questType = questStructure.Type.ToQuestType();
         bool hasQuestStarted = questStructure.State == QuestState.InQuest;
@@ -209,7 +207,7 @@ public sealed class MHRGame : CommonGame
             && (isQuestOver || isQuestInvalid))
         {
             this.Dispatch(_onQuestEnd, new QuestEndEventArgs(_quest, questStructure.State.ToQuestStatus(), TimeElapsed));
-            ScanManager.Remove(_quest);
+            _quest.Dispose();
             _quest = null;
         }
 
@@ -220,105 +218,112 @@ public sealed class MHRGame : CommonGame
         {
             _quest = new MHRQuest(
                 process: Process,
+                scanService: ScanService,
                 id: quest.Id,
                 type: questType!.Value,
                 level: quest.Level,
                 stars: quest.Stars
             );
 
-            ScanManager.Add(_quest);
             this.Dispatch(_onQuestStart, _quest);
         }
     }
 
     [ScannableMethod]
-    private void GetPartyMembersDamage()
+    private async Task GetPartyMembersDamage()
     {
         if ((DateTime.Now - _lastDamageUpdate).TotalMilliseconds < 100)
             return;
 
         _lastDamageUpdate = DateTime.Now;
 
-        if (Player.InHuntingZone)
-            DamageMessageHandler.RequestHuntStatistics(CommonConstants.AllTargets);
+        if (!Player.InHuntingZone)
+            return;
+
+        await DamageMessageHandler.RequestHuntStatisticsAsync(CommonConstants.AllTargets);
     }
 
     [ScannableMethod]
-    private void GetUIState()
+    private async Task GetUiState()
     {
-        byte isHudOpen = Process.Memory.Deref<byte>(
-            AddressMap.GetAbsolute("MOUSE_ADDRESS"),
-            AddressMap.Get<int[]>("MOUSE_OFFSETS")
+        byte isHudOpen = await Memory.DerefAsync<byte>(
+            address: AddressMap.GetAbsolute("MOUSE_ADDRESS"),
+            offsets: AddressMap.GetOffsets("MOUSE_OFFSETS")
         );
 
-        byte isCutsceneActive = Process.Memory.Deref<byte>(
-            AddressMap.GetAbsolute("EVENTCAMERA_ADDRESS"),
-            AddressMap.Get<int[]>("CUTSCENE_STATE_OFFSETS")
+        byte isCutsceneActive = await Memory.DerefAsync<byte>(
+            address: AddressMap.GetAbsolute("EVENTCAMERA_ADDRESS"),
+            offsets: AddressMap.GetOffsets("CUTSCENE_STATE_OFFSETS")
         );
 
         IsHudOpen = isHudOpen == 1 || isCutsceneActive != 0;
     }
 
     [ScannableMethod]
-    private void GetMonstersArray()
+    private async Task GetMonstersArray()
     {
         // Only scans for monsters in hunting areas
         if (!Player.InHuntingZone && Player.StageId != TRAINING_ROOM_ID)
         {
-            if (_monsters.Keys.Count > 0)
-                foreach (long mAddress in _monsters.Keys)
-                    HandleMonsterDespawn(mAddress);
+            if (_monsters.Keys.Count <= 0)
+                return;
+
+            foreach (IntPtr mAddress in _monsters.Keys)
+                HandleMonsterDespawn(mAddress);
 
             return;
         }
 
-        long address = Process.Memory.Read(
-            AddressMap.GetAbsolute("MONSTERS_ADDRESS"),
-            AddressMap.Get<int[]>("MONSTER_LIST_OFFSETS")
+        IntPtr address = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("MONSTERS_ADDRESS"),
+            offsets: AddressMap.GetOffsets("MONSTER_LIST_OFFSETS")
         );
 
-        uint monsterArraySize = Process.Memory.Read<uint>(address + 0x1C);
-        var monsterAddresses = Process.Memory.Read<long>(address + 0x20, Math.Min(MAXIMUM_MONSTER_ARRAY_SIZE, monsterArraySize))
-            .Where(mAddress => mAddress != 0)
+        var monsterAddresses = (await Memory.ReadArraySafeAsync<IntPtr>(address, MAXIMUM_MONSTER_ARRAY_SIZE))
+            .Where(mAddress => mAddress != IntPtr.Zero)
             .ToHashSet();
 
-        long[] toDespawn = _monsters.Keys.Where(address => !monsterAddresses.Contains(address))
+        IntPtr[] toDespawn = _monsters.Keys.Where(it => !monsterAddresses.Contains(it))
             .ToArray();
 
-        foreach (long mAddress in toDespawn)
+        foreach (IntPtr mAddress in toDespawn)
             HandleMonsterDespawn(mAddress);
 
-        long[] toSpawn = monsterAddresses.Where(address => !_monsters.ContainsKey(address))
+        IntPtr[] toSpawn = monsterAddresses.Where(it => !_monsters.ContainsKey(it))
             .ToArray();
 
-        foreach (long mAddress in toSpawn)
-            HandleMonsterSpawn(mAddress);
+        foreach (IntPtr mAddress in toSpawn)
+            await HandleMonsterSpawn(mAddress);
 
     }
 
-    private void HandleMonsterSpawn(long monsterAddress)
+    private async Task HandleMonsterSpawn(IntPtr monsterAddress)
     {
-        if (monsterAddress == 0 || _monsters.ContainsKey(monsterAddress))
+        if (monsterAddress.IsNullPointer() || _monsters.ContainsKey(monsterAddress))
             return;
 
-        var monster = new MHRMonster(Process, monsterAddress);
+        int monsterId = await Memory.ReadAsync<int>(monsterAddress + 0x2D4);
+
+        var monster = new MHRMonster(
+            process: Process,
+            scanService: ScanService,
+            address: monsterAddress,
+            id: monsterId
+        );
         _monsters.Add(monsterAddress, monster);
         Monsters.Add(monster);
-        ScanManager.Add(monster);
 
         this.Dispatch(_onMonsterSpawn, monster);
     }
 
-    private void HandleMonsterDespawn(long address)
+    private void HandleMonsterDespawn(IntPtr address)
     {
         if (_monsters[address] is not MHRMonster monster)
             return;
 
-        _ = _monsters.Remove(address);
-        _ = _damageDone.Remove(address);
-        _ = Monsters.Remove(monster);
-        ScanManager.Remove(monster);
-
+        _monsters.Remove(address);
+        _damageDone.Remove(address);
+        Monsters.Remove(monster);
 
         this.Dispatch(_onMonsterDespawn, monster);
 
@@ -327,15 +332,15 @@ public sealed class MHRGame : CommonGame
 
     #region Damage helpers
 
-    private static void OnPlayerStageUpdate(object? sender, EventArgs e)
+    private static async void OnPlayerStageUpdate(object? sender, EventArgs e)
     {
-        DamageMessageHandler.ClearAllHuntStatisticsExcept(Array.Empty<long>());
-        DamageMessageHandler.RequestHuntStatistics(CommonConstants.AllTargets);
+        await DamageMessageHandler.ClearAllHuntStatisticsExceptAsync(Array.Empty<IntPtr>());
+        await DamageMessageHandler.RequestHuntStatisticsAsync(CommonConstants.AllTargets);
     }
 
     private void OnReceivePlayersDamage(object? sender, ResponseDamageMessage e)
     {
-        long target = e.Target;
+        nint target = e.Target;
 
         _damageDone[target] = e.Entities;
 
@@ -359,22 +364,22 @@ public sealed class MHRGame : CommonGame
     #endregion
 
     #region Chat helpers
-    private MHRChatMessage DerefChatMessage(MHRChatMessageStructure message)
+    private async Task<MHRChatMessage> DerefChatMessageAsync(MHRChatMessageStructure message)
     {
         return message.Type switch
         {
-            0x0 => DerefNormalChatMessage(message),
+            0x0 => await DerefNormalChatMessageAsync(message),
             _ => DerefUnknownTypeMessage()
         };
     }
 
-    private MHRChatMessage DerefNormalChatMessage(MHRChatMessageStructure message)
+    private async Task<MHRChatMessage> DerefNormalChatMessageAsync(MHRChatMessageStructure message)
     {
-        int messageStringLength = Process.Memory.Read<int>(message.Message + 0x10);
-        int messageAuthorLength = Process.Memory.Read<int>(message.Author + 0x10);
+        int messageStringLength = await Memory.ReadAsync<int>(message.Message + 0x10);
+        int messageAuthorLength = await Memory.ReadAsync<int>(message.Author + 0x10);
 
-        string messageString = Process.Memory.Read(message.Message + 0x14, (uint)messageStringLength * 2, Encoding.Unicode);
-        string messageAuthor = Process.Memory.Read(message.Author + 0x14, (uint)messageAuthorLength * 2, Encoding.Unicode);
+        string messageString = await Memory.ReadAsync(message.Message + 0x14, messageStringLength * 2, Encoding.Unicode);
+        string messageAuthor = await Memory.ReadAsync(message.Author + 0x14, messageAuthorLength * 2, Encoding.Unicode);
 
         return new MHRChatMessage
         {
@@ -385,21 +390,6 @@ public sealed class MHRGame : CommonGame
         };
     }
 
-    private MHRChatMessage DerefAutoChatMessage(MHRChatMessageStructure message)
-    {
-        int messageAuthorLength = Process.Memory.Read<int>(message.Author + 0x10);
-        string messageAuthor = Process.Memory.Read(messageAuthorLength + 0x14, (uint)messageAuthorLength * 2, Encoding.Unicode);
-
-        return new MHRChatMessage
-        {
-            Message = "<Auto message>",
-            Author = messageAuthor,
-            Type = AuthorType.Auto
-        };
-    }
-
-    private MHRChatMessage DerefUnknownTypeMessage() => new() { Type = AuthorType.None };
-
+    private static MHRChatMessage DerefUnknownTypeMessage() => new() { Type = AuthorType.None };
     #endregion
 }
-#pragma warning restore IDE0051 // Remove unused private members

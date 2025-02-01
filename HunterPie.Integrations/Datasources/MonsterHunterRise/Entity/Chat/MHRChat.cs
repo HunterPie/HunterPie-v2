@@ -7,7 +7,7 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterRise.Entity.Chat;
 public class MHRChat : CommonChat
 {
     private bool _isChatOpen;
-    private readonly Dictionary<long, MHRChatMessage> _messages = new();
+    private readonly Dictionary<nint, MHRChatMessage> _messages = new();
 
     public override List<IChatMessage> Messages => _messages.Values.ToList<IChatMessage>();
 
@@ -24,9 +24,9 @@ public class MHRChat : CommonChat
         }
     }
 
-    internal bool ContainsMessage(long messageAddress) => _messages.ContainsKey(messageAddress);
+    internal bool ContainsMessage(nint messageAddress) => _messages.ContainsKey(messageAddress);
 
-    internal void AddMessage(long messageAddress, MHRChatMessage message)
+    internal void AddMessage(nint messageAddress, MHRChatMessage message)
     {
         if (_messages.ContainsKey(messageAddress))
             return;

@@ -1,6 +1,7 @@
 ﻿using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
 using System;
+using System.Collections.Generic;
 
 namespace HunterPie.Core.Game.Entity.Enemy;
 
@@ -17,7 +18,7 @@ public interface IMonster
     public Target Target { get; }
     public Target ManualTarget { get; }
     public IMonsterPart[] Parts { get; }
-    public IMonsterAilment[] Ailments { get; }
+    public IReadOnlyCollection<IMonsterAilment> Ailments { get; }
     public IMonsterAilment Enrage { get; }
     public Crown Crown { get; }
     public Element[] Weaknesses { get; }

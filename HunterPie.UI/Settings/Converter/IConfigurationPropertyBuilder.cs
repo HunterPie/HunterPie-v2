@@ -7,5 +7,5 @@ namespace HunterPie.UI.Settings.Converter;
 #nullable enable
 public interface IConfigurationPropertyBuilder
 {
-    public IConfigurationProperty Build(PropertyData data, GameProcess game);
+    public IConfigurationProperty Build(PropertyData data, GameProcessType game);
 }

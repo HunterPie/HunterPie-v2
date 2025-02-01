@@ -1,6 +1,5 @@
 ﻿using HunterPie.Core.Client;
 using HunterPie.Core.Client.Configuration.Overlay;
-using HunterPie.Core.Domain.Enums;
 using HunterPie.Core.Game;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Player;
@@ -9,6 +8,7 @@ using HunterPie.UI.Overlay;
 using HunterPie.UI.Overlay.Widgets.SpecializedTools;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HunterPie.Features.Overlay;
 
@@ -16,58 +16,55 @@ internal class SpecializedToolWidgetInitializer : IWidgetInitializer
 {
     private readonly List<IContextHandler> _handlers = new(2);
 
-    public void Load(IContext context)
+    public Task LoadAsync(IContext context)
     {
         if (context is not MHWContext mhwContext)
-            return;
+            return Task.CompletedTask;
 
-        InitializePrimaryTool(mhwContext);
-        InitializeSecondaryTool(mhwContext);
+        InitializeTool(
+            context: mhwContext,
+            index: 0,
+            configuration: ClientConfigHelper.DeferOverlayConfig(
+                game: context.Process.Type,
+                deferDelegate: cfg => cfg.PrimarySpecializedToolWidget
+            )
+        );
+        InitializeTool(
+            context: mhwContext,
+            index: 1,
+            configuration: ClientConfigHelper.DeferOverlayConfig(
+                game: context.Process.Type,
+                deferDelegate: cfg => cfg.SecondarySpecializedToolWidget
+            )
+        );
+
+        return Task.CompletedTask;
     }
 
     public void Unload()
     {
         foreach (IContextHandler handler in _handlers)
-            handler?.UnhookEvents();
+            handler.UnhookEvents();
 
         _handlers.Clear();
     }
 
-    private void InitializePrimaryTool(MHWContext context)
+    private void InitializeTool(
+        MHWContext context,
+        int index,
+        SpecializedToolWidgetConfig configuration)
     {
-        SpecializedToolWidgetConfig config = ClientConfigHelper.DeferOverlayConfig(
-            GameProcess.MonsterHunterWorld,
-            config => config.PrimarySpecializedToolWidget
-        );
-
-        if (!config.Initialize)
+        if (!configuration.Initialize)
             return;
 
         var player = (MHWPlayer)context.Game.Player;
 
-        _handlers.Add(new SpecializedToolWidgetContextHandler(
-            context,
-            player.Tools.ElementAtOrDefault(0),
-            config
-        ));
-    }
-
-    private void InitializeSecondaryTool(MHWContext context)
-    {
-        SpecializedToolWidgetConfig config = ClientConfigHelper.DeferOverlayConfig(
-            GameProcess.MonsterHunterWorld,
-            config => config.SecondarySpecializedToolWidget
+        _handlers.Add(
+            item: new SpecializedToolWidgetContextHandler(
+                context: context,
+                specializedTool: player.Tools.ElementAtOrDefault(index),
+                config: configuration
+            )
         );
-
-        if (!config.Initialize)
-            return;
-
-        var player = (MHWPlayer)context.Game.Player;
-
-        _handlers.Add(new SpecializedToolWidgetContextHandler(
-            context,
-            player.Tools.ElementAtOrDefault(1),
-            config
-        ));
     }
 }

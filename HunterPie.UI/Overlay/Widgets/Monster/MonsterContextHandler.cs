@@ -94,7 +94,7 @@ public class MonsterContextHandler : BossMonsterViewModel, IContextHandler, IDis
 
         FetchMonsterIcon();
 
-        UIThread.InvokeAsync(() =>
+        UIThread.BeginInvoke(() =>
         {
             if (Types.Count > 0)
                 return;
@@ -117,7 +117,7 @@ public class MonsterContextHandler : BossMonsterViewModel, IContextHandler, IDis
     }
     private void OnWeaknessesChange(object sender, Element[] e)
     {
-        _ = UIThread.InvokeAsync(() =>
+        UIThread.BeginInvoke(() =>
         {
             lock (Weaknesses)
             {
@@ -141,7 +141,7 @@ public class MonsterContextHandler : BossMonsterViewModel, IContextHandler, IDis
 
     private void OnNewAilmentFound(object sender, IMonsterAilment e)
     {
-        UIThread.Invoke(() =>
+        UIThread.BeginInvoke(() =>
         {
             bool contains = Ailments.ToArray()
                         .Cast<MonsterAilmentContextHandler>()
@@ -212,14 +212,14 @@ public class MonsterContextHandler : BossMonsterViewModel, IContextHandler, IDis
         CanBeCaptured = Context.CaptureThreshold > 0;
         IsCapturable = CaptureThreshold >= (Health / MaxHealth);
 
-        UIThread.InvokeAsync(() =>
+        UIThread.BeginInvoke(() =>
         {
             foreach (string typeId in Context.Types)
                 Types.Add(typeId);
         });
 
-        if (Parts.Count != Context.Parts.Length || Ailments.Count != Context.Ailments.Length)
-            _ = UIThread.InvokeAsync(() =>
+        if (Parts.Count != Context.Parts.Length || Ailments.Count != Context.Ailments.Count)
+            UIThread.BeginInvoke(() =>
             {
                 foreach (IMonsterPart part in Context.Parts)
                 {
@@ -252,7 +252,7 @@ public class MonsterContextHandler : BossMonsterViewModel, IContextHandler, IDis
             });
     }
 
-    private void AddEnrage() => UIThread.Invoke(() => Ailments.Add(new MonsterAilmentContextHandler(Context, Context.Enrage, Config)));
+    private void AddEnrage() => UIThread.BeginInvoke(() => Ailments.Add(new MonsterAilmentContextHandler(Context, Context.Enrage, Config)));
 
     private string BuildMonsterEmByContext()
     {

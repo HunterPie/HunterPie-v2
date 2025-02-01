@@ -12,7 +12,7 @@ namespace HunterPie.UI.Settings.ViewModels.Internal;
 public class MonsterDetailsPropertyViewModel : ConfigurationPropertyViewModel
 {
     public required ObservableHashSet<MonsterConfiguration> Configurations { get; init; }
-    public required GameProcess Game { get; init; }
+    public required GameProcessType Game { get; init; }
 
     public void ConfigureParts()
     {

@@ -6,7 +6,7 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 public struct MHWHudStructure
 {
     [FieldOffset(0x30)]
-    public long HealingArrayPointer;
+    public nint HealingArrayPointer;
 
     [FieldOffset(0x60)]
     public float MaxHealth;

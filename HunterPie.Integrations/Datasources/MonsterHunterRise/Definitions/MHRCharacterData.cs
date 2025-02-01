@@ -6,7 +6,7 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 public struct MHRCharacterData
 {
     [FieldOffset(0x18)]
-    public long NamePointer;
+    public nint NamePointer;
 
     [FieldOffset(0x38)]
     public int HighRank;

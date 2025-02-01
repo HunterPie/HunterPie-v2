@@ -7,4 +7,6 @@ public static class CommonLinks
     public const string DISCORD = "https://discord.gg/5pdDq4Q";
 
     public const string PATREON = "https://www.patreon.com/HunterPie";
+
+    public const string DOCUMENTATION = "https://docs.hunterpie.com/documentation/";
 }

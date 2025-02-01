@@ -4,13 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>2.10.0.146</AssemblyVersion>
-    <FileVersion>2.10.0.146</FileVersion>
+    <AssemblyVersion>2.12.0.213</AssemblyVersion>
+    <FileVersion>2.12.0.213</FileVersion>
 	<Authors>Haato</Authors>
 	<Description></Description>
-    <Version>2.2022.1208.2323</Version>
+    <Version>2.12.0.0</Version>
 	<LangVersion>11.0</LangVersion>
-    <IncrementVersionOnBuild>2.yyyy.Mdd.Hmm</IncrementVersionOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +19,7 @@
   <ItemGroup>
     <Folder Include="Datasources\MonsterHunterRise\Definitions\World\" />
     <Folder Include="Datasources\MonsterHunterRise\Entity\Game\Quest\" />
+    <Folder Include="Datasources\MonsterHunterWorld\Process\" />
   </ItemGroup>
 
 </Project>

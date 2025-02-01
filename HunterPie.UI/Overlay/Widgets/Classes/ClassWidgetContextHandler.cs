@@ -5,7 +5,6 @@ using HunterPie.Core.Game;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
-using HunterPie.Core.System;
 using HunterPie.UI.Overlay.Widgets.Classes.Controllers;
 using HunterPie.UI.Overlay.Widgets.Classes.ViewModels;
 using HunterPie.UI.Overlay.Widgets.Classes.Views;
@@ -56,7 +55,7 @@ public class ClassWidgetContextHandler : IContextHandler
 
     private void UpdateConfig(IWeapon weapon)
     {
-        OverlayConfig overlayConfig = ClientConfigHelper.GetOverlayConfigFrom(ProcessManager.Game);
+        OverlayConfig overlayConfig = ClientConfigHelper.GetOverlayConfigFrom(_context.Process.Type);
         ClassWidgetConfig? config = weapon.Id switch
         {
             Weapon.InsectGlaive => overlayConfig.InsectGlaiveWidget,

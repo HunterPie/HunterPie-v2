@@ -1,17 +1,20 @@
 ﻿using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
 using HunterPie.Core.Domain.Interfaces;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Enemy;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
+using HunterPie.Core.Scan.Service;
 
 namespace HunterPie.Integrations.Datasources.Common.Entity.Enemy;
 
 public abstract class CommonMonster : Scannable, IMonster, IDisposable, IEventDispatcher
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     public abstract string Name { get; }
     public abstract int Id { get; protected set; }
     public abstract float Health { get; protected set; }
@@ -23,7 +26,7 @@ public abstract class CommonMonster : Scannable, IMonster, IDisposable, IEventDi
     public abstract Target Target { get; protected set; }
     public abstract Target ManualTarget { get; protected set; }
     public abstract IMonsterPart[] Parts { get; }
-    public abstract IMonsterAilment[] Ailments { get; }
+    public abstract IReadOnlyCollection<IMonsterAilment> Ailments { get; }
     public abstract IMonsterAilment Enrage { get; }
     public abstract Crown Crown { get; protected set; }
     public abstract Element[] Weaknesses { get; }
@@ -134,10 +137,13 @@ public abstract class CommonMonster : Scannable, IMonster, IDisposable, IEventDi
         remove => _onCaptureThresholdChange.Unhook(value);
     }
 
-    public CommonMonster(IProcessManager process) : base(process) { }
+    protected CommonMonster(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService) { }
 
-    public virtual void Dispose()
+    public override void Dispose()
     {
+        base.Dispose();
         IDisposable[] events =
         {
             _onSpawn, _onLoad, _onDespawn, _onDeath, _onCapture, _onCrownChange, _onHealthChange,
@@ -147,6 +153,6 @@ public abstract class CommonMonster : Scannable, IMonster, IDisposable, IEventDi
 
         events.DisposeAll();
 
-        Log.Debug("Disposing monster {0}", Name);
+        _logger.Debug($"Disposing monster {Name}");
     }
 }

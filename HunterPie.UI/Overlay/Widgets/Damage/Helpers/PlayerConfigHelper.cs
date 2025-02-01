@@ -8,7 +8,7 @@ namespace HunterPie.UI.Overlay.Widgets.Damage.Helpers;
 
 public static class PlayerConfigHelper
 {
-    public static Color GetColorFromPlayer(GameProcess game, int slot, bool isSelf = false)
+    public static Color GetColorFromPlayer(GameProcessType game, int slot, bool isSelf = false)
     {
         DamageMeterWidgetConfig config = ClientConfigHelper.GetOverlayConfigFrom(game).DamageMeterWidget;
 

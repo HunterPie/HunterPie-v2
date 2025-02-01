@@ -5,7 +5,9 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("ABNORMALITY_TRAY_STRING", "ICON_SELFIMPROVEMENT+")]
+[Configuration(name: "ABNORMALITY_TRAY_STRING",
+    icon: "ICON_SELFIMPROVEMENT+",
+    group: CommonConfigurationGroups.OVERLAY)]
 public class AbnormalityTrayConfig : ISettings
 {
     [ConfigurationProperty("ABNORMALITY_TRAYS_STRING", requiresRestart: true, group: CommonConfigurationGroups.ABNORMALITY_TRAYS)]

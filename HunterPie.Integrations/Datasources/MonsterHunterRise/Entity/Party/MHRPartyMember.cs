@@ -12,7 +12,7 @@ public sealed class MHRPartyMember : CommonPartyMember, IUpdatable<MHRPartyMembe
     private int _damage;
     private Weapon _weapon;
 
-    public override string Name { get; protected set; }
+    public override string Name { get; protected set; } = string.Empty;
 
     public override int Damage
     {
@@ -55,7 +55,7 @@ public sealed class MHRPartyMember : CommonPartyMember, IUpdatable<MHRPartyMembe
         Type = type;
     }
 
-    void IUpdatable<MHRPartyMemberData>.Update(MHRPartyMemberData data)
+    public void Update(MHRPartyMemberData data)
     {
         Name = data.Name;
         Weapon = data.WeaponId;
@@ -66,7 +66,7 @@ public sealed class MHRPartyMember : CommonPartyMember, IUpdatable<MHRPartyMembe
         MasterRank = data.MasterRank;
     }
 
-    void IUpdatable<EntityDamageData>.Update(EntityDamageData data)
+    public void Update(EntityDamageData data)
     {
         float totalDamage = data.RawDamage + data.ElementalDamage;
         Damage = (int)totalDamage;

@@ -52,7 +52,7 @@ public class MHRCohoot : IEventDispatcher, IUpdatable<MHRCohootStructure>, IDisp
         remove => _onElgadoCountChange.Unhook(value);
     }
 
-    void IUpdatable<MHRCohootStructure>.Update(MHRCohootStructure data)
+    public void Update(MHRCohootStructure data)
     {
         ElgadoCount = data.ElgadoCount;
         KamuraCount = data.KamuraCount;

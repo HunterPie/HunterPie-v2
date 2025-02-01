@@ -11,6 +11,6 @@ public struct MHRLongSwordStructure
     /// <summary>
     /// float[] pointer, contains the maximum timer for each level. Can be indexed by <see cref="Level"/>
     /// </summary>
-    [FieldOffset(0xA00)] public long LevelMaxTimersPointer;
+    [FieldOffset(0xA00)] public nint LevelMaxTimersPointer;
     [FieldOffset(0xA08)] public float BuildUpBuffTimer;
 }

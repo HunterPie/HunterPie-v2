@@ -1,6 +1,6 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Enemy;
 using HunterPie.Core.Game.Entity.Game.Chat;
@@ -11,6 +11,8 @@ using HunterPie.Core.Game.Services;
 using HunterPie.Core.Native.IPC.Handlers.Internal.Damage;
 using HunterPie.Core.Native.IPC.Handlers.Internal.Damage.Models;
 using HunterPie.Core.Native.IPC.Models.Common;
+using HunterPie.Core.Scan.Service;
+using HunterPie.Core.Utils;
 using HunterPie.Integrations.Datasources.Common;
 using HunterPie.Integrations.Datasources.Common.Entity.Game;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Crypto;
@@ -29,8 +31,8 @@ namespace HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Game;
 public sealed class MHWGame : CommonGame
 {
     private readonly MHWPlayer _player;
-    private readonly Dictionary<long, IMonster> _monsters = new();
-    private readonly Dictionary<long, EntityDamageData[]> _damageDone = new();
+    private readonly Dictionary<nint, IMonster> _monsters = new();
+    private readonly Dictionary<nint, EntityDamageData[]> _damageDone = new();
     private bool _isMouseVisible;
     private readonly Stopwatch _localTimerStopwatch = new();
     private readonly Stopwatch _damageUpdateThrottleStopwatch = new();
@@ -61,30 +63,30 @@ public sealed class MHWGame : CommonGame
 
     public override IAbnormalityCategorizationService AbnormalityCategorizationService { get; } = new MHWAbnormalityCategorizatonService();
 
-    public MHWGame(IProcessManager process) : base(process)
+    public MHWGame(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService)
     {
-        _player = new MHWPlayer(process);
+        _player = new MHWPlayer(process, scanService);
         DamageMessageHandler.OnReceived += OnReceivePlayersDamage;
         _player.OnStageUpdate += OnPlayerStageUpdate;
-
-        ScanManager.Add(_player, this);
     }
 
     [ScannableMethod]
-    private void GetHudVisibility()
+    private async Task GetHudVisibility()
     {
-        bool isMouseVisible = Process.Memory.Deref<int>(
-            AddressMap.GetAbsolute("HUD_MENU_ADDRESS"),
-            AddressMap.Get<int[]>("HUD_MENU_OPEN_OFFSETS")
+        bool isMouseVisible = await Memory.DerefAsync<int>(
+            address: AddressMap.GetAbsolute("HUD_MENU_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("HUD_MENU_OPEN_OFFSETS")
         ) == 1;
 
         IsHudOpen = isMouseVisible;
     }
 
     [ScannableMethod]
-    private void GetWorldData()
+    private async Task GetWorldData()
     {
-        MHWWorldDataStructure worldData = Memory.Deref<MHWWorldDataStructure>(
+        MHWWorldDataStructure worldData = await Memory.DerefAsync<MHWWorldDataStructure>(
             address: AddressMap.GetAbsolute("WORLD_DATA_ADDRESS"),
             offsets: AddressMap.GetOffsets("WORLD_DATA_OFFSETS")
         );
@@ -95,20 +97,20 @@ public sealed class MHWGame : CommonGame
     }
 
     [ScannableMethod]
-    private void GetTimeElapsed()
+    private async Task GetTimeElapsed()
     {
-        long questEndTimerPtrs = Process.Memory.Read(
-            AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
-            AddressMap.Get<int[]>("QUEST_TIMER_OFFSETS")
+        nint questEndTimerPtrs = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("QUEST_TIMER_OFFSETS")
         );
-        ulong timer = Process.Memory.Read<ulong>(questEndTimerPtrs);
-        uint questMaxTimerRaw = Process.Memory.Read<uint>(questEndTimerPtrs + 0x10);
+        ulong timer = await Memory.ReadAsync<ulong>(questEndTimerPtrs);
+        uint questMaxTimerRaw = await Process.Memory.ReadAsync<uint>(questEndTimerPtrs + 0x10);
 
         float elapsed = MHWCrypto.LiterallyWhyCapcom(timer);
 
-        MHWQuestStructure quest = Memory.Deref<MHWQuestStructure>(
-            AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
-            AddressMap.GetOffsets("QUEST_DATA_OFFSETS")
+        MHWQuestStructure quest = await Memory.DerefAsync<MHWQuestStructure>(
+            address: AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
+            offsets: AddressMap.GetOffsets("QUEST_DATA_OFFSETS")
         );
 
         if (Quest is null && !quest.State.IsQuestOver())
@@ -148,11 +150,11 @@ public sealed class MHWGame : CommonGame
     }
 
     [ScannableMethod]
-    private void GetQuest()
+    private async Task GetQuest()
     {
-        MHWQuestStructure quest = Memory.Deref<MHWQuestStructure>(
-            AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
-            AddressMap.GetOffsets("QUEST_DATA_OFFSETS")
+        MHWQuestStructure quest = await Memory.DerefAsync<MHWQuestStructure>(
+            address: AddressMap.GetAbsolute("QUEST_DATA_ADDRESS"),
+            offsets: AddressMap.GetOffsets("QUEST_DATA_OFFSETS")
         );
 
         bool hasQuestStarted = quest.State == QuestState.InQuest;
@@ -163,7 +165,7 @@ public sealed class MHWGame : CommonGame
             && (isQuestOver || isQuestInvalid))
         {
             this.Dispatch(_onQuestEnd, new QuestEndEventArgs(_quest, quest.State.ToStatus(), TimeElapsed));
-            ScanManager.Remove(_quest);
+            _quest.Dispose();
             _quest = null;
         }
 
@@ -175,75 +177,85 @@ public sealed class MHWGame : CommonGame
 
             _quest = new MHWQuest(
                 process: Process,
+                scanService: ScanService,
                 id: quest.Id,
                 stars: quest.Stars,
                 questType: questType
             );
 
-            ScanManager.Add(_quest);
             this.Dispatch(_onQuestStart, _quest);
         }
 
     }
 
     [ScannableMethod]
-    private void GetPartyMembersDamage()
+    private async Task GetPartyMembersDamage()
     {
         if (_damageUpdateThrottleStopwatch.IsRunning && _damageUpdateThrottleStopwatch.ElapsedMilliseconds < 100)
             return;
 
         _damageUpdateThrottleStopwatch.Restart();
 
-        if (Player.InHuntingZone)
-            DamageMessageHandler.RequestHuntStatistics(CommonConstants.AllTargets);
+        if (!Player.InHuntingZone)
+            return;
+
+        await DamageMessageHandler.RequestHuntStatisticsAsync(CommonConstants.AllTargets);
     }
 
     [ScannableMethod]
-    private void GetMonsters()
+    private async Task GetMonsters()
     {
-        long monsterComponentsPointer = Memory.Read(
-            AddressMap.GetAbsolute("MONSTER_LIST_ADDRESS"),
-            AddressMap.GetOffsets("MONSTER_LIST_OFFSETS")
+        nint monsterComponentsPointer = await Memory.ReadAsync(
+            address: AddressMap.GetAbsolute("MONSTER_LIST_ADDRESS"),
+            offsets: AddressMap.GetOffsets("MONSTER_LIST_OFFSETS")
         );
-        (long monsterPtr, string em)[] bigMonsters = Memory.Read<long>(monsterComponentsPointer, 128)
+        (nint monsterPtr, string em)[] bigMonsters = (await Memory.ReadAsync<nint>(monsterComponentsPointer, 128))
             .AsParallel()
             .Where(component => !component.IsNullPointer())
-            .Select(component => Memory.Read<long>(component + 0x138))
-            .Select(monsterPtr => (monsterPtr: monsterPtr, em: Memory.ReadString(monsterPtr + 0x2A0, 64)))
+            .Select(async component => await Memory.ReadAsync<nint>(component + 0x138))
+            .AwaitResults()
+            .Select(async monsterPtr => (monsterPtr, em: await Memory.ReadStringAsync(monsterPtr + 0x2A0, 64)))
+            .AwaitResults()
             .Where(it => it.em.StartsWith("em\\em") && !it.em.StartsWith("em\\ems"))
             .ToArray();
 
-        foreach ((long monsterPtr, string em) in bigMonsters)
-            HandleMonsterSpawn(monsterPtr, em);
+        foreach ((nint monsterPtr, string em) in bigMonsters)
+            await HandleMonsterSpawnAsync(monsterPtr, em);
 
-        long[] monsterPtrs = bigMonsters.Select(it => it.monsterPtr)
+        nint[] monsterPtrs = bigMonsters.Select(it => it.monsterPtr)
             .ToArray();
 
         _monsters.Keys.Where(monsterPtr => !monsterPtrs.Contains(monsterPtr))
             .ForEach(HandleMonsterDespawn);
     }
 
-    private void HandleMonsterSpawn(long address, string em)
+    private async Task HandleMonsterSpawnAsync(nint address, string em)
     {
         if (_monsters.ContainsKey(address))
             return;
 
-        var monster = new MHWMonster(Process, address, em);
+        int id = await Memory.ReadAsync<int>(address + 0x12280);
+
+        var monster = new MHWMonster(
+            process: Process,
+            scanService: ScanService,
+            address: address,
+            id: id,
+            em: em
+        );
         _monsters.Add(address, monster);
         Monsters.Add(monster);
-        ScanManager.Add(monster);
 
         this.Dispatch(_onMonsterSpawn, monster);
     }
 
-    private void HandleMonsterDespawn(long address)
+    private void HandleMonsterDespawn(nint address)
     {
         if (_monsters[address] is not MHWMonster monster)
             return;
 
         _ = _monsters.Remove(address);
         _ = Monsters.Remove(monster);
-        ScanManager.Remove(monster);
 
         this.Dispatch(_onMonsterDespawn, monster);
 
@@ -268,22 +280,22 @@ public sealed class MHWGame : CommonGame
 
     #region Damage helpers
 
-    private void OnPlayerStageUpdate(object? sender, EventArgs e)
+    private async void OnPlayerStageUpdate(object? sender, EventArgs e)
     {
         if (!Player.InHuntingZone)
             // When back from hunt, manually clear damage data in case player enters Training Area (data won't be reset)
             foreach (MHWPartyMember member in Player.Party.Members.Cast<MHWPartyMember>())
                 member.ResetDamage();
 
-        DamageMessageHandler.ClearAllHuntStatisticsExcept(Array.Empty<long>());
-        DamageMessageHandler.RequestHuntStatistics(CommonConstants.AllTargets);
+        await DamageMessageHandler.ClearAllHuntStatisticsExceptAsync(Array.Empty<nint>());
+        await DamageMessageHandler.RequestHuntStatisticsAsync(CommonConstants.AllTargets);
         _damageUpdateThrottleStopwatch.Reset();
         _localTimerStopwatch.Reset();
     }
 
     private void OnReceivePlayersDamage(object? sender, ResponseDamageMessage e)
     {
-        long target = e.Target;
+        nint target = e.Target;
 
         _damageDone[target] = e.Entities;
 

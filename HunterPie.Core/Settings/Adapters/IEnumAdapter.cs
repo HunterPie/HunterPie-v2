@@ -4,5 +4,5 @@ namespace HunterPie.Core.Settings.Adapters;
 
 public interface IEnumAdapter : ISettingAdapter
 {
-    public object[] GetValues(GameProcess game);
+    public object[] GetValues(GameProcessType game);
 }

@@ -13,16 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace HunterPie.UI.Overlay.Widgets.Classes.Views
+namespace HunterPie.UI.Overlay.Widgets.Classes.Views;
+
+/// <summary>
+/// Interaction logic for LongSwordView.xaml
+/// </summary>
+public partial class LongSwordView : UserControl
 {
-    /// <summary>
-    /// Interaction logic for LongSwordView.xaml
-    /// </summary>
-    public partial class LongSwordView : UserControl
+    public LongSwordView()
     {
-        public LongSwordView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

@@ -1,26 +1,39 @@
 ﻿using HunterPie.Core.Remote;
 using HunterPie.Features.Account.Event;
 using HunterPie.Features.Account.Model;
-using HunterPie.GUI.Parts.Account.ViewModels;
+using HunterPie.Features.Account.UseCase;
+using HunterPie.Features.Account.ViewModels;
+using HunterPie.UI.Architecture.Extensions;
 using HunterPie.UI.Header.ViewModels;
-using HunterPie.UI.Logging.ViewModels;
-using HunterPie.UI.Navigation;
+using HunterPie.UI.Main.Navigators;
 using System;
-using System.Threading.Tasks;
 
 namespace HunterPie.Features.Account.Controller;
 
 internal class AccountController
 {
-    private readonly AccountMenuViewModel _menuViewModel = new() { IsLoading = true };
-    private static AccountPreferencesViewModel? _preferencesViewModel;
+    private readonly MainBodyNavigator _mainBodyNavigator;
+    private readonly IAccountUseCase _accountUseCase;
+    private readonly AccountMenuViewModel _menuViewModel;
 
-    public AccountController()
+    public AccountController(
+        IAccountUseCase accountUseCase,
+        AccountMenuViewModel menuViewModel,
+        MainBodyNavigator mainBodyNavigator)
     {
-        AccountManager.OnSignIn += OnSignIn;
-        AccountManager.OnSessionStart += OnSessionStart;
-        AccountManager.OnSignOut += OnSignOut;
-        AccountManager.OnAvatarChange += OnAvatarChange;
+        _mainBodyNavigator = mainBodyNavigator;
+        _accountUseCase = accountUseCase;
+        _menuViewModel = menuViewModel.Apply(it => it.IsLoading = true);
+
+        Subscribe();
+    }
+
+    private void Subscribe()
+    {
+        _accountUseCase.SignIn += OnSignIn;
+        _accountUseCase.SessionStart += OnSessionStart;
+        _accountUseCase.SignOut += OnSignOut;
+        _accountUseCase.AvatarChange += OnAvatarChange;
     }
 
     private async void OnAvatarChange(object? sender, AccountAvatarEventArgs e)
@@ -33,7 +46,7 @@ internal class AccountController
         _menuViewModel.IsLoggedIn = false;
         _menuViewModel.IsLoading = false;
 
-        Navigator.Body.ReturnWhen<AccountPreferencesViewModel>();
+        _mainBodyNavigator.ReturnWhen<AccountPreferencesViewModel>();
     }
 
     private void OnSessionStart(object? sender, AccountLoginEventArgs e) => UpdateViewModels(e.Account);
@@ -46,29 +59,5 @@ internal class AccountController
         _menuViewModel.AvatarUrl = await CDN.GetAsset(account.AvatarUrl);
         _menuViewModel.IsLoggedIn = true;
         _menuViewModel.IsLoading = false;
-    }
-
-    public static async Task<AccountPreferencesViewModel> GetPreferencesViewModel()
-    {
-        UserAccount? account = await AccountManager.FetchAccount();
-
-        _preferencesViewModel = new AccountPreferencesViewModel { IsFetchingAccount = true };
-
-        if (account is null)
-            return _preferencesViewModel;
-
-        return new AccountPreferencesViewModel
-        {
-            Email = account.Email,
-            Username = account.Username,
-            AvatarUrl = await CDN.GetAsset(account.AvatarUrl),
-            IsSupporter = account.IsSupporter,
-            IsFetchingAccount = false
-        };
-    }
-
-    public AccountMenuViewModel GetAccountMenuViewModel()
-    {
-        return _menuViewModel;
     }
 }

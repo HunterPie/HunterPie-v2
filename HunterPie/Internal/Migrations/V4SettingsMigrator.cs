@@ -25,8 +25,8 @@ internal class V4SettingsMigrator : ISettingsMigrator
             Development = config.Development
         };
 
-        if (config.Client.LastConfiguredGame.Value is > GameProcess.All or <= GameProcess.None)
-            newConfig.Client.LastConfiguredGame.Value = GameProcess.MonsterHunterRise;
+        if (config.Client.LastConfiguredGame.Value is > GameProcessType.All or <= GameProcessType.None)
+            newConfig.Client.LastConfiguredGame.Value = GameProcessType.MonsterHunterRise;
 
         return newConfig;
     }

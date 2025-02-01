@@ -7,7 +7,10 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("TELEMETRICS_WIDGET", "ICON_BUG", dependsOnFeature: FeatureFlags.FEATURE_METRICS_WIDGET)]
+[Configuration(name: "TELEMETRICS_WIDGET_STRING",
+    icon: "ICON_BUG",
+    group: CommonConfigurationGroups.OVERLAY,
+    dependsOnFeature: FeatureFlags.FEATURE_METRICS_WIDGET)]
 public class TelemetricsWidgetConfig : IWidgetSettings, ISettings
 {
     #region General Settings

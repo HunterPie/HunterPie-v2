@@ -9,7 +9,9 @@ using Newtonsoft.Json;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("ABNORMALITY_WIDGET", "ICON_STOPWATCH")]
+[Configuration(name: "ABNORMALITY_WIDGET",
+    icon: "ICON_STOPWATCH",
+    group: CommonConfigurationGroups.OVERLAY)]
 public class AbnormalityWidgetConfig : IWidgetSettings, ISettings
 {
     [JsonConverter(typeof(ObservableHashSetConverter<string>))]

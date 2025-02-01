@@ -10,7 +10,7 @@ namespace HunterPie.UI.Controls.Settings.Monsters.ViewModels;
 public class MonsterConfigurationsViewModel : ViewModel
 {
     private readonly MonsterDetailsConfiguration _configuration;
-    private MonsterConfigurationViewModel[] _elements;
+    private readonly MonsterConfigurationViewModel[] _elements;
 
     private bool _isSearching;
     public bool IsSearching { get => _isSearching; set => SetValue(ref _isSearching, value); }

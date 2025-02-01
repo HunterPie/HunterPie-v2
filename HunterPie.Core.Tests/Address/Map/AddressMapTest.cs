@@ -22,11 +22,11 @@ public class AddressMapTest
     private readonly Dictionary<Type, Dictionary<string, object>> correctResult = new()
     {
         {
-            typeof(long), new Dictionary<string, object>()
+            typeof(nint), new Dictionary<string, object>()
             {
-                { "BASE", 0x140000000L },
-                { "LEVEL_OFFSET", 0x04ECB810L },
-                { "ZONE_OFFSET", 0x04EC7030L }
+                { "BASE", (nint)0x140000000 },
+                { "LEVEL_OFFSET", (nint)0x04ECB810 },
+                { "ZONE_OFFSET", (nint)0x04EC7030 }
             }
         },
         {
@@ -51,19 +51,19 @@ public class AddressMapTest
             bool exists = correctResult.ContainsKey(type);
             Assert.IsTrue(exists);
 
-            if (exists)
-            {
-                foreach (KeyValuePair<string, object> map in result.Items[type])
-                {
-                    bool keyExists = correctResult[type].ContainsKey(map.Key);
-                    Assert.IsTrue(keyExists);
+            if (!exists)
+                continue;
 
-                    if (keyExists)
-                    {
-                        if (map.Value is not Array)
-                            Assert.AreEqual(correctResult[type][map.Key], map.Value);
-                    }
-                }
+            foreach (KeyValuePair<string, object> map in result.Items[type])
+            {
+                bool keyExists = correctResult[type].ContainsKey(map.Key);
+                Assert.IsTrue(keyExists);
+
+                if (!keyExists)
+                    continue;
+
+                if (map.Value is not Array)
+                    Assert.AreEqual(correctResult[type][map.Key], map.Value);
             }
         }
     }

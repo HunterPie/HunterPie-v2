@@ -1,5 +1,4 @@
 ﻿using HunterPie.Core.Client.Configuration.Enums;
-using HunterPie.Core.Logger;
 using System;
 using System.Diagnostics;
 
@@ -19,17 +18,10 @@ internal static class Steam
             _ => throw new NotImplementedException(),
         };
 
-        try
+        Process.Start(new ProcessStartInfo()
         {
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = $"steam://run/{appId}",
-                UseShellExecute = true
-            });
-        }
-        catch (Exception err)
-        {
-            Log.Error(err.ToString());
-        }
+            FileName = $"steam://run/{appId}",
+            UseShellExecute = true
+        });
     }
 }

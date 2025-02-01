@@ -57,7 +57,7 @@ public class WirebugWidgetContextHandler : IContextHandler
 
     private void OnWirebugsRefresh(object sender, MHRWirebug[] e)
     {
-        _view.Dispatcher.Invoke(() =>
+        _view.Dispatcher.BeginInvoke(() =>
         {
             foreach (WirebugViewModel vm in _viewModel.Elements)
                 if (vm is WirebugContextHandler model)

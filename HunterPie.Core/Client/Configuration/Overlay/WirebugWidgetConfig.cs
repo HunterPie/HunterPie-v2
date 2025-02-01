@@ -7,7 +7,10 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("WIREBUG_WIDGET_STRING", "ICON_WIREBUG_DARK", availableGames: GameProcess.MonsterHunterRise)]
+[Configuration(name: "WIREBUG_WIDGET_STRING",
+    icon: "ICON_WIREBUG_DARK",
+    group: CommonConfigurationGroups.OVERLAY,
+    availableGames: GameProcessType.MonsterHunterRise)]
 public class WirebugWidgetConfig : IWidgetSettings, ISettings
 {
     #region General Settings

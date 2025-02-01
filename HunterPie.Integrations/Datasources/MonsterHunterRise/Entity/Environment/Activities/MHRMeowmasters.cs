@@ -98,7 +98,7 @@ public class MHRMeowmasters : IEventDispatcher, IUpdatable<MHRMeowmasterData>, I
         remove => _onBuddyCountChange.Unhook(value);
     }
 
-    void IUpdatable<MHRMeowmasterData>.Update(MHRMeowmasterData data)
+    public void Update(MHRMeowmasterData data)
     {
         MaxSteps = data.MaxStep;
         Step = data.CurrentStep + (data.IsDeployed ? data.CurrentStep == 0 ? 1 : 0 : 0);

@@ -56,52 +56,64 @@ public static class MHRiseUtils
     public static double CalculateMaxPlayerStamina(this MHRPetalaceStatsStructure stats) =>
         (stats.StaminaUp * PETALACE_STAMINA_MULTIPLIER) + MAX_DEFAULT_STAMINA + FOOD_BONUS_STAMINA;
 
-    public static T[] ReadArray<T>(this IMemory memory, long address) where T : struct
+    public static async Task<T[]> ReadArrayAsync<T>(this IMemoryAsync memory, IntPtr address) where T : struct
     {
-        uint arraySize = memory.Read<uint>(address + 0x1C);
-        return memory.Read<T>(address + 0x20, arraySize);
+        int arraySize = await memory.ReadAsync<int>(address + 0x1C);
+        return await memory.ReadAsync<T>(address + 0x20, arraySize);
     }
 
-    public static T[] ReadArrayOfPtrs<T>(this IMemory memory, long address) where T : struct
+    public static async IAsyncEnumerable<T> ReadArrayOfPtrsAsync<T>(this IMemoryAsync memory, IntPtr address) where T : struct
     {
-        return memory.ReadArray<long>(address)
-            .Select(memory.Read<T>)
-            .ToArray();
+        IntPtr[] pointers = await memory.ReadArrayAsync<IntPtr>(address);
+
+        foreach (IntPtr pointer in pointers)
+        {
+            T value = await memory.ReadAsync<T>(pointer);
+            yield return value;
+        }
     }
 
-    public static T[] ReadArrayOfPtrsSafe<T>(this IMemory memory, long address, uint size) where T : struct
+    public static async IAsyncEnumerable<T> ReadArrayOfPtrsSafeAsync<T>(this IMemoryAsync memory, IntPtr address, int size) where T : struct
     {
-        return memory.ReadArraySafe<long>(address, size)
-            .Select(memory.Read<T>)
-            .ToArray();
+        IntPtr[] pointers = await memory.ReadArraySafeAsync<IntPtr>(address, size);
+
+        foreach (IntPtr pointer in pointers)
+        {
+            T value = await memory.ReadAsync<T>(pointer);
+            yield return value;
+        }
     }
 
-    public static T[] ReadArraySafe<T>(this IMemory memory, long address, uint size) where T : struct
+    public static async Task<T[]> ReadArraySafeAsync<T>(this IMemoryAsync memory, IntPtr address, int size) where T : struct
     {
-        uint arraySize = memory.Read<uint>(address + 0x1C);
+        int arraySize = await memory.ReadAsync<int>(address + 0x1C);
         arraySize = Math.Min(size, arraySize);
-        return memory.Read<T>(address + 0x20, arraySize);
+        return await memory.ReadAsync<T>(address + 0x20, arraySize);
     }
 
-    public static IReadOnlyCollection<T> ReadListOfPtrsSafe<T>(this IMemory memory, long address, uint size)
+    public static async IAsyncEnumerable<T> ReadListOfPtrsSafeAsync<T>(this IMemoryAsync memory, IntPtr address, int size)
         where T : struct
     {
-        return memory.ReadListSafe<long>(address, size)
-            .Select(memory.Read<T>)
-            .ToArray();
+        IntPtr[] pointers = await memory.ReadListSafeAsync<IntPtr>(address, size);
+
+        foreach (IntPtr pointer in pointers)
+        {
+            T value = await memory.ReadAsync<T>(pointer);
+            yield return value;
+        }
     }
 
-    public static IReadOnlyCollection<T> ReadListSafe<T>(this IMemory memory, long address, uint size) where T : struct
+    public static async Task<T[]> ReadListSafeAsync<T>(this IMemoryAsync memory, IntPtr address, int size) where T : struct
     {
-        uint listSize = memory.Read<uint>(address + 0x18);
+        int listSize = await memory.ReadAsync<int>(address + 0x18);
         listSize = Math.Min(listSize, size);
-        return memory.Read<T>(address + 0x20, listSize);
+        return await memory.ReadAsync<T>(address + 0x20, listSize);
     }
 
-    public static IReadOnlyCollection<T> ReadList<T>(this IMemory memory, long address) where T : struct
+    public static async Task<T[]> ReadListAsync<T>(this IMemoryAsync memory, IntPtr address) where T : struct
     {
-        uint listSize = memory.Read<uint>(address + 0x18);
-        return memory.Read<T>(address + 0x20, listSize);
+        int listSize = await memory.ReadAsync<int>(address + 0x18);
+        return await memory.ReadAsync<T>(address + 0x20, listSize);
     }
 
     public static WirebugType ToType(this MHRWirebugCountStructure count, int index)

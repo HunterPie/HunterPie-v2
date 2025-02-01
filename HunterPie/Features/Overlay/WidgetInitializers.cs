@@ -1,13 +1,17 @@
 ﻿using HunterPie.Core.Game;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.UI.Architecture.Overlay;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HunterPie.Features.Overlay;
 
 internal static class WidgetInitializers
 {
+    private static readonly ILogger Logger = LoggerFactory.Create();
+
     private static readonly Lazy<IWidgetInitializer[]> Initializers = new(() =>
     {
         return AppDomain.CurrentDomain.GetAssemblies()
@@ -18,17 +22,18 @@ internal static class WidgetInitializers
             .ToArray();
     });
 
-    public static void Initialize(Context context)
+    public static async Task InitializeAsync(Context context)
     {
-        foreach (IWidgetInitializer initializer in Initializers.Value)
-            try
-            {
-                initializer.Load(context);
-            }
-            catch (Exception err)
-            {
-                Log.Error(err.ToString());
-            }
+        IEnumerable<Task> tasks = Initializers.Value.Select(it => it.LoadAsync(context));
+
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch (Exception err)
+        {
+            Logger.Error(err.ToString());
+        }
     }
 
     public static void Unload()

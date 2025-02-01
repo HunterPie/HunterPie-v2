@@ -23,4 +23,9 @@ public static class CommonConfigurationGroups
     public const string NATIVE = "CONFIGURATION_GROUP_NATIVE";
     public const string RENDERING = "CONFIGURATION_GROUP_RENDERING";
     public const string SCANNING = "CONFIGURATION_GROUP_SCANNING";
+
+    public const string CLIENT = "CONFIGURATION_GROUP_CLIENT";
+    public const string OVERLAY = "CONFIGURATION_GROUP_OVERLAY";
+    public const string ACCOUNT = "CONFIGURATION_GROUP_ACCOUNT";
+    public const string FEATURE_FLAGS = "CONFIGURATION_GROUP_FLAGS";
 }

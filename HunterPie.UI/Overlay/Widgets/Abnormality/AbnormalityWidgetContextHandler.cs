@@ -38,7 +38,7 @@ internal class AbnormalityWidgetContextHandler : IContextHandler
 
     private void OnAbnormalityEnd(object sender, IAbnormality e)
     {
-        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        Application.Current.Dispatcher.BeginInvoke(() =>
         {
             AbnormalityContextHandler handler = ViewModel.Abnormalities.Cast<AbnormalityContextHandler>()
                 .FirstOrDefault(vm => vm.Context == e);
@@ -53,7 +53,7 @@ internal class AbnormalityWidgetContextHandler : IContextHandler
 
     private void OnAbnormalityStart(object sender, IAbnormality e)
     {
-        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+        Application.Current.Dispatcher.BeginInvoke(() =>
         {
             if (!Config.AllowedAbnormalities.Contains(e.Id))
                 return;
@@ -71,7 +71,7 @@ internal class AbnormalityWidgetContextHandler : IContextHandler
 
     private void UpdateData()
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        Application.Current.Dispatcher.BeginInvoke(() =>
         {
             foreach (IAbnormality abnormality in Context.Game.Player.Abnormalities)
             {

@@ -1,0 +1,458 @@
+﻿<UserControl x:Class="HunterPie.Features.Statistics.Details.Views.MonsterDetailsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:buttons="clr-namespace:HunterPie.UI.Controls.Buttons;assembly=HunterPie.UI"
+             xmlns:text="clr-namespace:HunterPie.UI.Controls.Text;assembly=HunterPie.UI"
+             xmlns:controls="clr-namespace:HunterPie.UI.Overlay.Controls;assembly=HunterPie.UI"
+             xmlns:viewer="clr-namespace:HunterPie.UI.Controls.Viewer;assembly=HunterPie.UI"
+             xmlns:assets="clr-namespace:HunterPie.UI.Architecture.Assets;assembly=HunterPie.UI"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters;assembly=HunterPie.UI"
+             mc:Ignorable="d" 
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance viewModels:MonsterDetailsViewModel}"
+             Background="{StaticResource GRAY_200}">
+    <UserControl.Resources>
+        <converters:WeaponToIconConverter x:Key="WeaponToIconConverter"/>
+        <converters:BoolPickConverter x:Key="BoolPickConverter"/>
+        <converters:ParentSizePercentageConverter x:Key="ParentSizePercentageConverter"/>
+        <converters:AbnormalityNameConverter x:Key="AbnormalityNameConverter"/>
+        <converters:AbnormalityStringToIconConverter x:Key="AbnormalityStringToIconConverter"/>
+        <converters:IntToKFormat x:Key="NumberToKFormat"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Margin="3"
+                Background="{StaticResource GRAY_400}"
+                Grid.Row="0"
+                BorderBrush="{StaticResource GRAY_100}"
+                BorderThickness="1"
+                CornerRadius="5">
+            <StackPanel Orientation="Horizontal">
+                <Image d:Source="{StaticResource ICON_SKULL}"
+                       Source="{Binding Icon, Mode=OneWay}"
+                       Margin="5"
+                       RenderOptions.BitmapScalingMode="Fant"/>
+
+                <TextBlock Margin="3"
+                           d:Text="Monster Name"
+                           Text="{Binding Name, Mode=OneWay}"
+                           FontSize="14"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource WHITE_400}"
+                           FontWeight="Medium"/>
+            </StackPanel>
+        </Border>
+            
+        <!-- Details -->
+        <StackPanel Grid.Row="1">
+            
+            <!-- Quest Details -->
+            <Border Margin="5"
+                    Background="{StaticResource GRAY_100}"
+                    BorderBrush="{StaticResource GRAY}"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                
+                <!-- General Details -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" 
+                            Grid.Row="0" 
+                            Background="{StaticResource GRAY_300}"
+                            BorderBrush="{StaticResource GRAY_100}"
+                            BorderThickness="0,0,1,0"
+                            CornerRadius="5,0,0,0">
+                        <TextBlock d:Text="Hunt Details"
+                                   Text="{assets:LocalizationString '//Strings/Client/Main/String[@Id=&quot;CLIENT_HUNT_EXPORT_HUNT_DETAILS_STRING&quot;]'}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource WHITE_300}"
+                                   FontSize="13"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="0"
+                                Grid.Row="1">
+                        <StackPanel Orientation="Vertical"
+                                    Margin="5">
+                            <text:LabeledText Label="Quest Time"
+                                              d:Text="00:00:00.000"
+                                              Text="{Binding TimeElapsed, Mode=OneWay, StringFormat='mm\\:ss\\&quot;fff', TargetNullValue='---'}"
+                                              Margin="2"/>
+
+                            <text:LabeledText Label="Hunt Time"
+                                              Text="{Binding HuntElapsed, Mode=OneWay, StringFormat='mm\\:ss\\&quot;fff', TargetNullValue='---'}"
+                                              Margin="2"/>
+
+                            <text:LabeledText Label="Health"
+                                              Text="{Binding MaxHealth, Mode=OneWay, StringFormat=\{0:N0\}}"
+                                              Margin="2"/>
+
+                            <text:LabeledText Label="Size"
+                                              Text="{Binding Crown, Mode=OneWay}"
+                                              Margin="2"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <Border Grid.Column="1" 
+                            Grid.Row="0" 
+                            Background="{StaticResource GRAY_300}"
+                            CornerRadius="0,5,0,0">
+                        <TextBlock d:Text="Status Details"
+                                   Text="{assets:LocalizationString '//Strings/Client/Main/String[@Id=&quot;CLIENT_HUNT_EXPORT_STATUS_DETAILS_STRING&quot;]'}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource WHITE_300}"
+                                   FontSize="13"/>
+                    </Border>
+                    
+                    <!-- Monster ailments -->
+                    <ItemsControl Grid.Row="1"
+                                  Grid.Column="1"
+                                  Margin="5"
+                                  ItemsSource="{Binding Statuses, Mode=OneWay}">
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <StackPanel Orientation="Horizontal"
+                                            IsItemsHost="True"/>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <buttons:Button Padding="0"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Stretch"
+                                                BorderThickness="1"
+                                                CornerRadius="5"
+                                                Height="80"
+                                                Click="OnMonsterStatusClick">
+                                    <buttons:Button.BorderBrush>
+                                        <MultiBinding Converter="{StaticResource BoolPickConverter}">
+                                            <Binding Path="DataContext.IsToggled" RelativeSource="{RelativeSource Self}"/>
+                                            <Binding Source="{StaticResource GREEN_300}"/>
+                                            <Binding Source="{StaticResource GRAY}"/>
+                                        </MultiBinding>
+                                    </buttons:Button.BorderBrush>
+                                    <buttons:Button.Background>
+                                        <MultiBinding Converter="{StaticResource BoolPickConverter}">
+                                            <Binding Path="DataContext.IsToggled" RelativeSource="{RelativeSource Self}"/>
+                                            <Binding Source="{StaticResource GREEN_700}"/>
+                                            <Binding Source="{StaticResource GRAY_300}"/>
+                                        </MultiBinding>
+                                    </buttons:Button.Background>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="3*"/>
+                                            <RowDefinition Height="1*"/>
+                                        </Grid.RowDefinitions>
+                                        <controls:Arc Grid.Row="0"
+                                                      StrokeThickness="4"
+                                                      Stroke="{Binding Color, Mode=OneWay}"
+                                                      Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"
+                                                      Percentage="{Binding UpTime, Mode=OneWay}"
+                                                      Margin="5"/>
+                                        <TextBlock Grid.Row="0"
+                                                   Text="{Binding UpTime, Mode=OneWay, StringFormat='P0'}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   FontWeight="Medium"
+                                                   Foreground="{StaticResource WHITE_50}"/>
+
+                                        <TextBlock Grid.Row="1"
+                                                   Text="{Binding Name, Mode=OneWay}"
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{StaticResource WHITE_100}"
+                                                   Margin="2"/>
+                                    </Grid>
+                                </buttons:Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+            
+            <Border Margin="5"
+                    Background="{StaticResource GRAY_100}"
+                    BorderBrush="{StaticResource GRAY}"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" 
+                            Grid.Row="0" 
+                            Background="{StaticResource GRAY_300}"
+                            BorderBrush="{StaticResource GRAY_100}"
+                            BorderThickness="0,0,1,0"
+                            CornerRadius="5,0,0,0">
+                        <TextBlock d:Text="Party Members"
+                                   Text="{assets:LocalizationString '//Strings/Client/Main/String[@Id=&quot;CLIENT_HUNT_EXPORT_PARTY_MEMBERS_STRING&quot;]'}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource WHITE_300}"
+                                   FontSize="13"/>
+                    </Border>
+
+                    <!-- Party members -->
+                    <ItemsControl Grid.Row="1"
+                                  Grid.Column="0"
+                                  ItemsSource="{Binding Players, Mode=OneWay}">
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <viewer:SmoothScrollViewer>
+                                    <StackPanel Margin="5"
+                                                IsItemsHost="True"/>
+                                </viewer:SmoothScrollViewer>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <buttons:Button Padding="0"
+                                                HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Stretch"
+                                                Background="{StaticResource GRAY_300}"
+                                                BorderThickness="1"
+                                                CornerRadius="5"
+                                                Margin="0,3,0,3"
+                                                Height="40"
+                                                Click="OnPlayerClick">
+                                    <buttons:Button.BorderBrush>
+                                        <MultiBinding Converter="{StaticResource BoolPickConverter}">
+                                            <Binding Path="DataContext.IsToggled" RelativeSource="{RelativeSource Self}"/>
+                                            <Binding Path="Color" Mode="OneWay"/>
+                                            <Binding Source="{StaticResource GRAY}"/>
+                                        </MultiBinding>
+                                    </buttons:Button.BorderBrush>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="1*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Grid.Column="0"
+                                                   Grid.ColumnSpan="2"
+                                                   Fill="{Binding Color, Mode=OneWay}"
+                                                   Opacity="0.15"
+                                                   VerticalAlignment="Stretch"
+                                                   HorizontalAlignment="Left"
+                                                   MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}">
+                                            <Rectangle.Width>
+                                                <MultiBinding Converter="{StaticResource ParentSizePercentageConverter}"
+                                                              ConverterParameter="1">
+                                                    <Binding Path="DataContext.Contribution" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type buttons:Button}}"/>
+                                                    <Binding Path="MaxWidth" RelativeSource="{RelativeSource Self}"/>
+                                                </MultiBinding>
+                                            </Rectangle.Width>
+                                        </Rectangle>
+                                        <Image Grid.Column="0"
+                                               Margin="4"
+                                               Source="{Binding Weapon, Mode=OneWay, Converter={StaticResource WeaponToIconConverter}}"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Name, Mode=OneWay}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="5"
+                                                   FontSize="15"
+                                                   Foreground="{StaticResource WHITE_100}"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right"
+                                                   Text="{Binding Damage, Converter={StaticResource NumberToKFormat}}"
+                                                   Foreground="{StaticResource WHITE_300}"
+                                                   FontSize="13"
+                                                   Margin="5"/>
+                                    </Grid>
+                                </buttons:Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Details -->
+                    <Border Grid.Column="1" 
+                            Grid.Row="0" 
+                            Background="{StaticResource GRAY_300}"
+                            CornerRadius="0,5,0,0">
+                        <TextBlock d:Text="Details"
+                                   Text="{assets:LocalizationString '//Strings/Client/Main/String[@Id=&quot;CLIENT_HUNT_EXPORT_DETAILS_STRING&quot;]'}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource WHITE_300}"
+                                   FontSize="13"/>
+                    </Border>
+
+                    
+                    <lvc:CartesianChart Series="{Binding DamageSeries, Mode=OneWay}"
+                                        DisableAnimations="True"
+                                        Margin="5"
+                                        Zoom="X"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Height="250"
+                                        DataTooltip="{x:Null}"
+                                        Hoverable="False"
+                                        Background="{StaticResource GRAY_200}"
+                                        x:Name="PART_Graph">
+                                <lvc:CartesianChart.CacheMode>
+                                    <BitmapCache EnableClearType="True"
+                                                 RenderAtScale="1"
+                                                 SnapsToDevicePixels="True"/>
+                                </lvc:CartesianChart.CacheMode>
+                                <lvc:CartesianChart.AxisY>
+                                    <lvc:Axis MinValue="0"
+                                              LabelFormatter="{Binding DamageFormatter, Mode=OneWay}"
+                                              FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator Stroke="{StaticResource GRAY}"/>
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisY>
+                                <lvc:CartesianChart.AxisX>
+                                    <lvc:Axis LabelFormatter="{Binding TimeFormatter, Mode=OneWay}" 
+                                              FontFamily="{StaticResource HUNTERPIE_DEFAULT_FONT}"
+                                              Sections="{Binding Sections, Mode=OneWay}"
+                                              MinValue="0">
+                                        <lvc:Axis.Separator>
+                                            <lvc:Separator IsEnabled="False"/>
+                                        </lvc:Axis.Separator>
+                                    </lvc:Axis>
+                                </lvc:CartesianChart.AxisX>
+                            </lvc:CartesianChart>
+
+                    <GridSplitter Grid.Row="0"
+                                  Grid.Column="0"
+                                  Grid.RowSpan="2"
+                                  Width="2"
+                                  Background="{StaticResource GRAY}"/>
+                </Grid>
+            </Border>
+
+
+            <!-- Abnormalities -->
+            <Border Margin="5"
+                    Background="{StaticResource GRAY_100}"
+                    BorderBrush="{StaticResource GRAY}"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Column="0" 
+                            Grid.Row="0" 
+                            Background="{StaticResource GRAY_300}"
+                            BorderBrush="{StaticResource GRAY_100}"
+                            BorderThickness="0,0,1,0"
+                            CornerRadius="5,0,0,0">
+                        <TextBlock d:Text="Abnormalities"
+                                   Text="{assets:LocalizationString '//Strings/Client/Main/String[@Id=&quot;CLIENT_HUNT_EXPORT_ABNORMALITIES_STRING&quot;]'}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource WHITE_300}"
+                                   FontSize="13"/>
+                    </Border>
+    
+                    <ItemsControl Grid.Row="1"
+                                  ItemsSource="{Binding SelectedAbnormalities, Mode=OneWay}">
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <WrapPanel IsItemsHost="True"/>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <buttons:Button Padding="0"
+                                                VerticalContentAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                Width="50"
+                                                Height="50"
+                                                Margin="5"
+                                                BorderThickness="1"
+                                                CornerRadius="5"
+                                                Click="OnAbnormalityClick"
+                                                ToolTip="{Binding Name, Mode=OneWay, Converter={StaticResource AbnormalityNameConverter}}">
+                                    <buttons:Button.BorderBrush>
+                                        <MultiBinding Converter="{StaticResource BoolPickConverter}">
+                                            <Binding Path="DataContext.IsToggled" RelativeSource="{RelativeSource Self}"/>
+                                            <Binding Source="{StaticResource GREEN_300}"/>
+                                            <Binding Source="{StaticResource GRAY}"/>
+                                        </MultiBinding>
+                                    </buttons:Button.BorderBrush>
+                                    <buttons:Button.Background>
+                                        <MultiBinding Converter="{StaticResource BoolPickConverter}">
+                                            <Binding Path="DataContext.IsToggled" RelativeSource="{RelativeSource Self}"/>
+                                            <Binding Source="{StaticResource GREEN_700}"/>
+                                            <Binding Source="{StaticResource GRAY_300}"/>
+                                        </MultiBinding>
+                                    </buttons:Button.Background>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="2*"/>
+                                            <RowDefinition Height="1*"/>
+                                        </Grid.RowDefinitions>
+                                        <Rectangle Grid.Row="0" 
+                                                   VerticalAlignment="Bottom"
+                                                   HorizontalAlignment="Stretch"
+                                                   Grid.RowSpan="2"
+                                                   Opacity="1"
+                                                   MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"
+                                                   Fill="{Binding Color, Mode=OneWay}">
+                                            <Rectangle.Height>
+                                                <MultiBinding Converter="{StaticResource ParentSizePercentageConverter}"
+                                                              ConverterParameter="1">
+                                                    <Binding Path="DataContext.UpTime" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type buttons:Button}}"/>
+                                                    <Binding Path="MaxHeight" RelativeSource="{RelativeSource Self}"/>
+                                                </MultiBinding>
+                                            </Rectangle.Height>
+                                        </Rectangle>
+
+                                        <Image Source="{Binding Icon, Mode=OneWay, Converter={StaticResource AbnormalityStringToIconConverter}}"
+                                               Margin="2"
+                                               Grid.Row="0"/>
+
+                                        <TextBlock Grid.Row="1"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   d:Text="50%"
+                                                   Text="{Binding UpTime, Mode=OneWay, StringFormat='P0'}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{StaticResource WHITE_300}"/>
+                                    </Grid>
+                                </buttons:Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

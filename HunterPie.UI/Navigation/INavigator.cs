@@ -10,5 +10,5 @@ public interface INavigator
 
     public void Return();
 
-    public void ReturnWhen<TViewModel>() where TViewModel: ViewModel;
+    public void ReturnWhen<TViewModel>() where TViewModel : ViewModel;
 }

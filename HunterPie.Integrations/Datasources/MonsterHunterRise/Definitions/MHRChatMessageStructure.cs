@@ -12,11 +12,11 @@ public struct MHRChatMessageStructure
     public int Type;
 
     [FieldOffset(0x38)]
-    public long Author;
+    public nint Author;
 
     [FieldOffset(0x50)]
     public int PlayerSlot;
 
     [FieldOffset(0x68)]
-    public long Message;
+    public nint Message;
 }

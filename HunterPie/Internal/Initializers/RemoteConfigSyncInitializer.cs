@@ -1,5 +1,6 @@
 ﻿using HunterPie.Domain.Interfaces;
 using HunterPie.Features.Account.Config;
+using HunterPie.Features.Account.UseCase;
 using System.Threading.Tasks;
 
 namespace HunterPie.Internal.Initializers;
@@ -10,13 +11,22 @@ namespace HunterPie.Internal.Initializers;
 /// </summary>
 internal class RemoteConfigSyncInitializer : IInitializer
 {
-    private readonly RemoteAccountConfigService _remoteConfigService = new();
+    private readonly IRemoteAccountConfigUseCase _remoteConfigService;
+    private readonly RemoteConfigSyncService _configSyncService;
+
+    public RemoteConfigSyncInitializer(
+        IRemoteAccountConfigUseCase remoteConfigService,
+        RemoteConfigSyncService configSyncService
+        )
+    {
+        _remoteConfigService = remoteConfigService;
+        _configSyncService = configSyncService;
+    }
 
     public async Task Init()
     {
-        await _remoteConfigService.FetchClientConfig();
+        await _remoteConfigService.Download();
 
-        new RemoteConfigSyncService(_remoteConfigService)
-            .Start();
+        _configSyncService.Start();
     }
 }

@@ -1,5 +1,5 @@
 ﻿using HunterPie.Core.Client;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,14 +12,16 @@ namespace HunterPie.Internal.Initializers;
 
 internal class CustomThemeInitializer : IInitializer
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     public Task Init()
     {
         string themePath = Path.Combine(ClientInfo.ThemesPath, ClientConfig.Config.Client.Theme);
 
         if (!Directory.Exists(themePath))
         {
-            Log.Error("Failed to load theme {0}", ClientConfig.Config.Client.Theme.Current);
-            Log.Info("Failed to find theme {0}, Changed to Default theme", ClientConfig.Config.Client.Theme.Current);
+            _logger.Error($"Failed to load theme {ClientConfig.Config.Client.Theme.Current}");
+            _logger.Info($"Failed to find theme {ClientConfig.Config.Client.Theme.Current}, Changed to Default theme");
             themePath = Path.Combine(ClientInfo.ThemesPath, "Default");
             ClientConfig.Config.Client.Theme.Current = "Default";
         }
@@ -29,7 +31,7 @@ internal class CustomThemeInitializer : IInitializer
         foreach (string file in xamlFilesToLoad)
             TryLoadingResource(file);
 
-        Log.Info("Loaded theme {0}", ClientConfig.Config.Client.Theme.Current);
+        _logger.Info($"Loaded theme {ClientConfig.Config.Client.Theme.Current}");
 
         return Task.CompletedTask;
     }
@@ -45,7 +47,7 @@ internal class CustomThemeInitializer : IInitializer
         }
         catch (Exception err)
         {
-            Log.Error("Failed to load custom file {0}\n{1}", file, err.ToString());
+            _logger.Error($"Failed to load custom file {file}\n{err}");
         }
     }
 }

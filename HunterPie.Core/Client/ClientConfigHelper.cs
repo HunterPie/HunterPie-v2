@@ -10,41 +10,41 @@ public static class ClientConfigHelper
 {
     public delegate T OverlayConfigDeferDelegate<T>(OverlayConfig config);
 
-    public static OverlayConfig GetOverlayConfigFrom(GameProcess game)
+    public static OverlayConfig GetOverlayConfigFrom(GameProcessType game)
     {
         return game switch
         {
-            GameProcess.MonsterHunterRise => ClientConfig.Config.Rise.Overlay,
+            GameProcessType.MonsterHunterRise => ClientConfig.Config.Rise.Overlay,
 
-            GameProcess.MonsterHunterWorld => ClientConfig.Config.World.Overlay,
+            GameProcessType.MonsterHunterWorld => ClientConfig.Config.World.Overlay,
             _ => throw new NotImplementedException(),
         };
     }
 
-    public static T DeferOverlayConfig<T>(GameProcess game, OverlayConfigDeferDelegate<T> deferDelegate)
+    public static T DeferOverlayConfig<T>(GameProcessType game, OverlayConfigDeferDelegate<T> deferDelegate)
     {
         OverlayConfig config = GetOverlayConfigFrom(game);
 
         return deferDelegate(config);
     }
 
-    public static DiscordRichPresence GetDiscordRichPresenceConfigFrom(GameProcess game)
+    public static DiscordRichPresence GetDiscordRichPresenceConfigFrom(GameProcessType game)
     {
         return game switch
         {
-            GameProcess.MonsterHunterRise => ClientConfig.Config.Rise.RichPresence,
-            GameProcess.MonsterHunterWorld => ClientConfig.Config.World.RichPresence,
+            GameProcessType.MonsterHunterRise => ClientConfig.Config.Rise.RichPresence,
+            GameProcessType.MonsterHunterWorld => ClientConfig.Config.World.RichPresence,
             _ => throw new NotImplementedException(),
         };
     }
 
-    public static GameConfig GetGameConfigBy(GameProcess game)
+    public static GameConfig GetGameConfigBy(GameProcessType game)
     {
         return game switch
         {
-            GameProcess.MonsterHunterRise => ClientConfig.Config.Rise,
+            GameProcessType.MonsterHunterRise => ClientConfig.Config.Rise,
 
-            GameProcess.MonsterHunterWorld => ClientConfig.Config.World,
+            GameProcessType.MonsterHunterWorld => ClientConfig.Config.World,
             _ => throw new NotImplementedException(),
         };
     }

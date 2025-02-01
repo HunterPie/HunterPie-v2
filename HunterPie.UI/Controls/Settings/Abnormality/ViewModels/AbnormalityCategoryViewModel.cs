@@ -10,8 +10,8 @@ public class AbnormalityCategoryViewModel : Architecture.ViewModel
     private string _description;
     public string Description { get => _description; set => SetValue(ref _description, value); }
 
-    private string _icon;
-    public string Icon { get => _icon; set => SetValue(ref _icon, value); }
+    private string? _icon;
+    public string? Icon { get => _icon; set => SetValue(ref _icon, value); }
 
     public ObservableCollection<AbnormalityElementViewModel> Elements { get; init; }
 }

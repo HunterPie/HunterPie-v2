@@ -1,12 +1,13 @@
 ﻿using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Entity.Player.Skills;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Utils;
 
@@ -112,17 +113,20 @@ public sealed class MHWLongSword : MHWMeleeWeapon, ILongSword
     }
     #endregion
 
-    public MHWLongSword(IProcessManager process, ISkillService skillService) : base(process, skillService, Weapon.Longsword)
+    public MHWLongSword(
+        IGameProcess process,
+        ISkillService skillService,
+        IScanService scanService) : base(process, scanService, skillService, Weapon.Longsword)
     {
         _skillService = skillService;
     }
 
     [ScannableMethod]
-    private void GetData()
+    private async Task GetData()
     {
-        MHWLongSwordStructure structure = Memory.Deref<MHWLongSwordStructure>(
-            AddressMap.GetAbsolute("WEAPON_MECHANICS_ADDRESS"),
-            AddressMap.Get<int[]>("WEAPON_MECHANICS_OFFSETS")
+        MHWLongSwordStructure structure = await Memory.DerefAsync<MHWLongSwordStructure>(
+            address: AddressMap.GetAbsolute("WEAPON_MECHANICS_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("WEAPON_MECHANICS_OFFSETS")
         );
 
         if (structure.SpiritLevel is < 0 or > 3)

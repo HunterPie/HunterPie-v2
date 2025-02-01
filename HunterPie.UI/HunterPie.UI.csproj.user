@@ -26,6 +26,12 @@
     <Compile Update="Controls\Buttons\TabItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Controls\Display\Carousel.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\Display\Section.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Controls\Effects\CursorHightlight.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -87,6 +93,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Controls\Text\LabeledText.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\Text\Title.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Dialog\DialogView.xaml.cs">
@@ -292,6 +301,12 @@
     <Page Update="Controls\Buttons\TabItem.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Controls\Display\Carousel.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\Display\Section.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Controls\Effects\CursorHightLight.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -353,6 +368,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Controls\Text\LabeledText.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\Text\Title.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Dialog\DialogView.xaml">

@@ -1,10 +1,11 @@
 ﻿using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
 using HunterPie.Core.Domain.Interfaces;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 
 namespace HunterPie.Integrations.Datasources.Common.Entity.Player.Weapons;
 public abstract class CommonMeleeWeapon : Scannable, IWeapon, IMeleeWeapon, IEventDispatcher, IDisposable
@@ -30,10 +31,13 @@ public abstract class CommonMeleeWeapon : Scannable, IWeapon, IMeleeWeapon, IEve
         remove => _onSharpnessLevelChange.Unhook(value);
     }
 
-    protected CommonMeleeWeapon(IProcessManager process) : base(process) { }
+    protected CommonMeleeWeapon(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService) { }
 
-    public virtual void Dispose()
+    public override void Dispose()
     {
+        base.Dispose();
         _onSharpnessChange.Dispose();
         _onSharpnessLevelChange.Dispose();
     }

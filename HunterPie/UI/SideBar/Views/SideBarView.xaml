@@ -18,13 +18,12 @@
             RenderingBias="Quality" />
     </UserControl.Effect>
     <Grid>
-        <Rectangle
-            x:Name="PART_HitTest"
-            Width="50"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Stretch"
-            Fill="White"
-            MouseEnter="OnMouseEnter">
+        <Rectangle x:Name="PART_HitTest"
+                   Width="50"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Stretch"
+                   Fill="White"
+                   MouseEnter="OnMouseEnter">
             <Rectangle.RenderTransform>
                 <ScaleTransform ScaleX="1" />
             </Rectangle.RenderTransform>
@@ -37,7 +36,7 @@
                                     <Storyboard Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
                                         <DoubleAnimation To="6" Duration="0:0:0.3">
                                             <DoubleAnimation.EasingFunction>
-                                                <QuadraticEase />
+                                                <CubicEase />
                                             </DoubleAnimation.EasingFunction>
                                         </DoubleAnimation>
                                     </Storyboard>
@@ -48,7 +47,7 @@
                                     <Storyboard Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
                                         <DoubleAnimation To="1" Duration="0:0:0.3">
                                             <DoubleAnimation.EasingFunction>
-                                                <QuadraticEase />
+                                                <CubicEase />
                                             </DoubleAnimation.EasingFunction>
                                         </DoubleAnimation>
                                     </Storyboard>
@@ -59,16 +58,14 @@
                 </Style>
             </Rectangle.Style>
         </Rectangle>
-        <Grid
-            x:Name="PART_SideBar"
-            Background="{StaticResource GRAY_50}"
-            IsHitTestVisible="False"
-            MouseLeave="OnMouseLeave">
+        <Grid x:Name="PART_SideBar"
+              Background="{StaticResource GRAY_50}"
+              IsHitTestVisible="False"
+              MouseLeave="OnMouseLeave">
             <Grid.OpacityMask>
-                <VisualBrush
-                    AlignmentX="Left"
-                    Stretch="None"
-                    Visual="{Binding ElementName=PART_HitTest}" />
+                <VisualBrush AlignmentX="Left"
+                             Stretch="None"
+                             Visual="{Binding ElementName=PART_HitTest}" />
             </Grid.OpacityMask>
             <ItemsControl ItemsSource="{Binding Elements, Mode=OneTime}">
                 <ItemsControl.ItemTemplate>

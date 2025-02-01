@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace HunterPie.Core.Domain.Cache;
 
-#nullable enable
 public interface IAsyncCache
 {
-    public Task<T?> Get<T>(string key);
-    public Task Set<T>(string key, T value, CacheOptions? options = null);
+    public Task<T?> GetAsync<T>(string key);
+    public Task SetAsync<T>(string key, T value, CacheOptions? options = null) where T : notnull;
+    public Task ClearAsync(string key);
 }

@@ -1,67 +1,54 @@
-﻿using HunterPie.Core.Client;
-using HunterPie.Core.Domain.Interfaces;
+﻿using HunterPie.Core.Domain.Interfaces;
 using HunterPie.Core.Settings.Types;
-using HunterPie.Core.System.Windows.Registry;
 using HunterPie.Domain.Interfaces;
 using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace HunterPie.Internal.Initializers;
 
-public class LocalConfigInitializer : IInitializer
+internal class LocalConfigInitializer : IInitializer
 {
+    private readonly ILocalRegistryAsync _localRegistryAsync;
+
     private const string KEY_SECRET = "secret";
     private const string CLIENT_ID = "client_id";
 
-    public Task Init()
+    public LocalConfigInitializer(ILocalRegistryAsync localRegistryAsync)
     {
-        InitializeLocalRegistry();
-        GenerateSecretKey();
-        GenerateClientId();
-
-        return Task.CompletedTask;
+        _localRegistryAsync = localRegistryAsync;
     }
 
-    private void InitializeLocalRegistry()
+    public async Task Init()
     {
-        ILocalRegistry registry;
+        using var rng = RandomNumberGenerator.Create();
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            registry = new WindowsRegistry();
-        else
-            throw new NotImplementedException("unsupported OS");
-
-        RegistryConfig.Initialize(registry);
+        await GenerateSecretKeyAsync(rng);
+        await GenerateClientIdAsync(rng);
     }
 
     /// <summary>
     /// Generates a new Secret Key, this will be used SOLELY to keep string values safe in the config.json when using the <seealso cref="Secret"/>
     /// class, so users can share their config.json without the risk of losing whatever was saved in the Secret text box.
     /// </summary>
-    private void GenerateSecretKey()
+    private async Task GenerateSecretKeyAsync(RandomNumberGenerator rng)
     {
-        if (RegistryConfig.Exists(KEY_SECRET))
+        if (await _localRegistryAsync.ExistsAsync(KEY_SECRET))
             return;
-
-        using RandomNumberGenerator rng = new RNGCryptoServiceProvider();
 
         byte[] token = new byte[16];
         rng.GetBytes(token);
 
-        RegistryConfig.Set(KEY_SECRET, token);
+        await _localRegistryAsync.SetAsync(KEY_SECRET, token);
     }
 
     /// <summary>
     /// Generates a new Client Id for this HunterPie client, this will be used in Http requests to the API
     /// </summary>
-    private void GenerateClientId()
+    private async Task GenerateClientIdAsync(RandomNumberGenerator rng)
     {
-        if (RegistryConfig.Exists(CLIENT_ID))
+        if (await _localRegistryAsync.ExistsAsync(CLIENT_ID))
             return;
-
-        using RandomNumberGenerator rng = new RNGCryptoServiceProvider();
 
         byte[] bytes = new byte[16];
         rng.GetBytes(bytes);
@@ -69,6 +56,6 @@ public class LocalConfigInitializer : IInitializer
         string token = BitConverter.ToString(bytes)
             .Replace("-", string.Empty);
 
-        RegistryConfig.Set(CLIENT_ID, token);
+        await _localRegistryAsync.SetAsync(CLIENT_ID, token);
     }
 }

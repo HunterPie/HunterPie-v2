@@ -10,7 +10,7 @@ namespace HunterPie.Core.Client.Configuration.Overlay.Class;
 public class ClassWidgetConfig : IWidgetSettings, ISettings
 {
     #region General Settings
-    [ConfigurationProperty("INITIALIZE_WIDGET_STRING", requiresRestart: true, availableGames: GameProcess.None, group: CommonConfigurationGroups.GENERAL)]
+    [ConfigurationProperty("INITIALIZE_WIDGET_STRING", requiresRestart: true, availableGames: GameProcessType.None, group: CommonConfigurationGroups.GENERAL)]
     [ConfigurationCondition]
     public Observable<bool> Initialize { get; set; } = true;
 

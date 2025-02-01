@@ -20,18 +20,20 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0
+    
+    - name: Build project
+      run: dotnet build HunterPie --nologo -v q --property WarningLevel=0 /clp:ErrorsOnly
 
-    - name: Restore packages
-      shell: pwsh
-      run: msbuild -m /t:Restore
+    - name: Run unit tests
+      run: dotnet test *.Tests
 
-    - name: Build apps
-      shell: pwsh
-      run: msbuild -m /p:Configuration=Debug
+    - name: Run formatter
+      run: dotnet format --verify-no-changes

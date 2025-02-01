@@ -1,6 +1,7 @@
 ﻿using HunterPie.Core.Json;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace HunterPie.UI.Architecture.Extensions;
@@ -38,8 +39,17 @@ public static class ObjectExtensions
     /// <typeparam name="T">The input type</typeparam>
     /// <param name="object">Object to apply properties to</param>
     /// <param name="block">Function that applies properties</param>
-    public static void Apply<T>(this T @object, Action<T> block) where T : class
+    public static T Apply<T>(this T @object, Action<T> block) where T : class
     {
         block(@object);
+
+        return @object;
+    }
+
+    public static async Task<T> ApplyAsync<T>(this T @object, Func<T, Task> block) where T : class
+    {
+        await block(@object);
+
+        return @object;
     }
 }

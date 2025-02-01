@@ -1,10 +1,8 @@
 ﻿using HunterPie.Core.Client;
 using HunterPie.Core.Client.Localization;
 using HunterPie.Core.Remote;
-using HunterPie.Core.Utils;
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows.Markup;
 using System.Windows.Media;
 
@@ -22,13 +20,12 @@ public class MonsterIcon : MarkupExtension
 
     public override object ProvideValue(IServiceProvider serviceProvider)
     {
-        async Task<string> DownloadMonsterIcon() => await CDN.GetMonsterIconUrl(MonsterEm);
-
+        static async void DownloadIcon(string monsterEm) => await CDN.GetMonsterIconUrl(monsterEm);
         string imagePath = ClientInfo.GetPathFor($"Assets/Monsters/Icons/{MonsterEm}.png");
 
         // If file doesn't exist locally, we can check for the CDN
         if (!File.Exists(imagePath))
-            _ = AsyncHelper.RunSync(DownloadMonsterIcon);
+            DownloadIcon(MonsterEm);
 
         return $"pack://siteoforigin:,,,/Assets/Monsters/Icons/{MonsterEm}.png";
     }

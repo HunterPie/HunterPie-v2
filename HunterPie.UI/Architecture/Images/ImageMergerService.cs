@@ -17,14 +17,12 @@ public static class ImageMergerService
     {
         using var backgroundImage = Image.FromFile(image);
         using var maskImage = Image.FromFile(mask);
-
-
         using var graphics = Graphics.FromImage(backgroundImage);
+
         graphics.DrawImage(maskImage, new Rectangle(0, 0, backgroundImage.Width, backgroundImage.Height));
         _ = graphics.Save();
 
         using var output = new Bitmap(backgroundImage);
-
         output.Save(outputPath, ImageFormat.Png);
         return Task.FromResult(outputPath);
     }

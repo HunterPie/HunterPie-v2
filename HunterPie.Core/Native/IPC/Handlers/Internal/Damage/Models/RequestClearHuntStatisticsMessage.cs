@@ -9,5 +9,5 @@ public struct RequestClearHuntStatisticsMessage
     public IPCMessage Header;
 
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-    public long[] TargetsToKeep;
+    public nint[] TargetsToKeep;
 }

@@ -11,6 +11,6 @@ public struct MHRDualBladesStructure
     [FieldOffset(0x9EC)]
     [MarshalAs(UnmanagedType.Bool)] public bool IsDemonModeActive;
 
-    [FieldOffset(0xA38)] public long PiercingBindArrayPointer;
+    [FieldOffset(0xA38)] public nint PiercingBindArrayPointer;
     [FieldOffset(0xA48)] public bool IsArchDemonModeActive;
 }

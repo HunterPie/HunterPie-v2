@@ -1,4 +1,6 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Client;
+using HunterPie.Core.Client.Configuration.Enums;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.UI.Architecture.Extensions;
 using HunterPie.UI.Overlay.Enums;
 using HunterPie.UI.Platform.Windows.Native;
@@ -25,6 +27,8 @@ namespace HunterPie.UI.Overlay.Components;
 /// </summary>
 public partial class WidgetBase : Window, INotifyPropertyChanged
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
+
     private readonly object _sync = new();
     private bool _isClosed;
     private DateTime _lastRender;
@@ -84,6 +88,12 @@ public partial class WidgetBase : Window, INotifyPropertyChanged
         CompositionTarget.Rendering += OnRender;
     }
 
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        ConfigureRenderingStrategy();
+        base.OnSourceInitialized(e);
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         lock (_sync)
@@ -105,6 +115,21 @@ public partial class WidgetBase : Window, INotifyPropertyChanged
 
         _lastRender = DateTime.Now;
         _counter++;
+    }
+
+    private void ConfigureRenderingStrategy()
+    {
+        var hwndSource = PresentationSource.FromVisual(this) as HwndSource;
+
+        if (hwndSource?.CompositionTarget is null)
+            return;
+
+        hwndSource.CompositionTarget.RenderMode = ClientConfig.Config.Client.Render.Value switch
+        {
+            RenderingStrategy.Hardware => RenderMode.Default,
+            RenderingStrategy.Software => RenderMode.SoftwareOnly,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     protected override void OnClosing(CancelEventArgs e)
@@ -148,7 +173,7 @@ public partial class WidgetBase : Window, INotifyPropertyChanged
         int result = User32.SetWindowLong(hWnd, User32.GWL_EXSTYLE, (int)styles);
 
         if (result == 0)
-            Log.Error("Failed to set widget {0} flags due to error code: {1}", Widget.GetType().Name, Marshal.GetLastWin32Error());
+            _logger.Error($"Failed to set widget {Widget.GetType()} flags due to error code: {Marshal.GetLastWin32Error()}");
     }
 
     private void ForceAlwaysOnTop()

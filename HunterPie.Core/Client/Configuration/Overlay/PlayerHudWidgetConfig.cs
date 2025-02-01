@@ -7,7 +7,10 @@ using HunterPie.Core.Settings.Types;
 
 namespace HunterPie.Core.Client.Configuration.Overlay;
 
-[Configuration("PLAYER_HUD_WIDGET_STRING", "ICON_HELM", availableGames: GameProcess.MonsterHunterRise | GameProcess.MonsterHunterWorld)]
+[Configuration(name: "PLAYER_HUD_WIDGET_STRING",
+    icon: "ICON_HELM",
+    group: CommonConfigurationGroups.OVERLAY,
+    availableGames: GameProcessType.MonsterHunterRise | GameProcessType.MonsterHunterWorld)]
 public class PlayerHudWidgetConfig : IWidgetSettings, ISettings
 {
     #region General Settings

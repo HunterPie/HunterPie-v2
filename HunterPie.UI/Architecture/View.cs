@@ -1,4 +1,5 @@
 ﻿using HunterPie.Core.Architecture;
+using HunterPie.DI;
 using HunterPie.UI.Overlay;
 using System;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Windows.Threading;
 
 namespace HunterPie.UI.Architecture;
 
+// TODO: Refactor this
 public class View<TViewModel> : UserControl, IDisposable, IView<TViewModel>
     where TViewModel : Bindable
 {
@@ -17,12 +19,26 @@ public class View<TViewModel> : UserControl, IDisposable, IView<TViewModel>
 
     protected virtual TViewModel InitializeViewModel(params object[] args)
     {
-        if (this is not IWidgetWindow)
-            return Activator.CreateInstance<TViewModel>();
+        try
+        {
+            if (this is not IWidgetWindow)
+                return Activator.CreateInstance<TViewModel>();
+        }
+        catch
+        {
+            return DependencyContainer.Get<TViewModel>();
+        }
 
         try
         {
             return (TViewModel)Activator.CreateInstance(typeof(TViewModel), args);
+        }
+        catch
+        { }
+
+        try
+        {
+            return DependencyContainer.Get<TViewModel>();
         }
         catch { }
 

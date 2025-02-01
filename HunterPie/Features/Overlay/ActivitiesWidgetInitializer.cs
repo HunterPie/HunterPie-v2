@@ -1,26 +1,26 @@
 ﻿using HunterPie.Core.Client;
 using HunterPie.Core.Client.Configuration;
 using HunterPie.Core.Game;
-using HunterPie.Core.System;
 using HunterPie.Integrations.Datasources.MonsterHunterRise;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld;
 using HunterPie.UI.Architecture.Overlay;
 using HunterPie.UI.Overlay;
 using HunterPie.UI.Overlay.Widgets.Activities;
 using System;
+using System.Threading.Tasks;
 
 namespace HunterPie.Features.Overlay;
 
 internal class ActivitiesWidgetInitializer : IWidgetInitializer
 {
-    private IContextHandler _handler;
+    private IContextHandler? _handler;
 
-    public void Load(IContext context)
+    public Task LoadAsync(IContext context)
     {
-        OverlayConfig config = ClientConfigHelper.GetOverlayConfigFrom(ProcessManager.Game);
+        OverlayConfig config = ClientConfigHelper.GetOverlayConfigFrom(context.Process.Type);
 
         if (!config.ActivitiesWidget.Initialize)
-            return;
+            return Task.CompletedTask;
 
         _handler = context switch
         {
@@ -30,6 +30,7 @@ internal class ActivitiesWidgetInitializer : IWidgetInitializer
         };
 
         _handler?.HookEvents();
+        return Task.CompletedTask;
     }
 
     public void Unload()

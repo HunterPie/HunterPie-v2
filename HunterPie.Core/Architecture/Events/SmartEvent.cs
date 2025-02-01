@@ -1,4 +1,4 @@
-﻿using HunterPie.Core.Logger;
+﻿using HunterPie.Core.Observability.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +6,6 @@ using System.Reflection;
 
 namespace HunterPie.Core.Architecture.Events;
 
-#nullable enable
 /// <summary>
 /// SmartEvent is an wrapper for Events that works in a better way, detecting subscriber leaks and handling errors on invoke
 /// without crashing the whole application.
@@ -17,6 +16,7 @@ public class SmartEvent<TSource, TEventArgs> : ISmartEvent
     where TSource : class
     // TODO: Make TEventArgs : EventArgs 
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
     private readonly object _sync = new();
     private EventHandler<TEventArgs>? _event;
 
@@ -64,7 +64,7 @@ public class SmartEvent<TSource, TEventArgs> : ISmartEvent
                 }
                 catch (Exception err)
                 {
-                    Log.Error("Exception in {0}: {1}", sub.Method.Name, err);
+                    _logger.Error($"Exception in {sub.Method.Name}: {err}");
                 }
         }
     }

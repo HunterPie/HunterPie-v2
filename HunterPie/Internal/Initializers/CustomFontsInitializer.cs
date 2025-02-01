@@ -1,5 +1,5 @@
 ﻿using HunterPie.Core.Client;
-using HunterPie.Core.Logger;
+using HunterPie.Core.Observability.Logging;
 using HunterPie.Domain.Interfaces;
 using HunterPie.UI.Platform.Windows.Native;
 using System;
@@ -11,6 +11,7 @@ namespace HunterPie.Internal.Initializers;
 
 internal class CustomFontsInitializer : IInitializer, IDisposable
 {
+    private readonly ILogger _logger = LoggerFactory.Create();
     private static readonly string _fontsFolder = ClientInfo.GetPathFor("Assets\\Fonts");
 
     private static readonly Lazy<string[]> _fonts = new(() =>
@@ -40,7 +41,7 @@ internal class CustomFontsInitializer : IInitializer, IDisposable
             int result = Gdi32.RemoveFontResourceW(fontName);
 
             if (result == 0)
-                Log.Error("Failed to remove font resource. Error code: {0}", result);
+                _logger.Error($"Failed to remove font resource. Error code: {result}");
         }
     }
 }

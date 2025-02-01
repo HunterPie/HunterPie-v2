@@ -2,11 +2,12 @@
 using HunterPie.Core.Address.Map;
 using HunterPie.Core.Architecture.Events;
 using HunterPie.Core.Domain;
-using HunterPie.Core.Domain.Process;
+using HunterPie.Core.Domain.Process.Entity;
 using HunterPie.Core.Extensions;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Enums;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Scan.Service;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Definitions;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Entity.Enums;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Utils;
@@ -154,16 +155,18 @@ public sealed class MHRInsectGlaive : MHRMeleeWeapon, IInsectGlaive
         remove => _onChargeChange.Unhook(value);
     }
 
-    public MHRInsectGlaive(IProcessManager process) : base(process, Weapon.InsectGlaive) { }
+    public MHRInsectGlaive(
+        IGameProcess process,
+        IScanService scanService) : base(process, scanService, Weapon.InsectGlaive) { }
 
     [ScannableMethod]
-    private void GetKinsectData()
+    private async Task GetKinsectData()
     {
-        MHRInsectGlaiveDataStructure structure = Memory.Deref<MHRInsectGlaiveDataStructure>(
-            AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
-            AddressMap.Get<int[]>("CURRENT_WEAPON_OFFSETS")
+        MHRInsectGlaiveDataStructure structure = await Memory.DerefAsync<MHRInsectGlaiveDataStructure>(
+            address: AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("CURRENT_WEAPON_OFFSETS")
         );
-        KinsectBuff[] extracts = Memory.ReadArraySafe<int>(structure.ExtractsArray, 2)
+        KinsectBuff[] extracts = (await Memory.ReadArraySafeAsync<int>(structure.ExtractsArray, 2))
             .Select(it => (KinsectExtract)it)
             .Select(it => it.ToBuff())
             .ToArray();
@@ -181,11 +184,11 @@ public sealed class MHRInsectGlaive : MHRMeleeWeapon, IInsectGlaive
     }
 
     [ScannableMethod]
-    private void GetKinsectStamina()
+    private async Task GetKinsectStamina()
     {
-        MHRKinsectStaminaStructure structure = Memory.Deref<MHRKinsectStaminaStructure>(
-            AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
-            AddressMap.Get<int[]>("KINSECT_STAMINA_OFFSETS")
+        MHRKinsectStaminaStructure structure = await Memory.DerefAsync<MHRKinsectStaminaStructure>(
+            address: AddressMap.GetAbsolute("LOCAL_PLAYER_DATA_ADDRESS"),
+            offsets: AddressMap.Get<int[]>("KINSECT_STAMINA_OFFSETS")
         );
 
         MaxStamina = structure.Max;

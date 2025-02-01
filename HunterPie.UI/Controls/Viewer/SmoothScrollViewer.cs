@@ -8,44 +8,71 @@ using System.Windows.Media.Animation;
 namespace HunterPie.UI.Controls.Viewer;
 public class SmoothScrollViewer : ScrollViewer
 {
-    private double _totalVerticalOffset;
-    private readonly Queue<double> _verticalOffsetQueue = new();
+    private double _totalOffset;
+    private readonly Queue<double> _offsetQueue = new();
     private bool _isScrolling;
 
-    public double CurrentVerticalOffset
+    public double CurrentOffset
     {
-        get => (double)GetValue(CurrentVerticalOffsetProperty);
-        set => SetValue(CurrentVerticalOffsetProperty, value);
+        get => (double)GetValue(CurrentOffsetProperty);
+        set => SetValue(CurrentOffsetProperty, value);
     }
+    public static readonly DependencyProperty CurrentOffsetProperty =
+        DependencyProperty.Register(nameof(CurrentOffset), typeof(double), typeof(ScrollViewer), new PropertyMetadata(0.0, OnCurrentOffsetChanged));
 
-    // Using a DependencyProperty as the backing store for CurrentVerticalOffset.  This enables animation, styling, binding, etc...
-    public static readonly DependencyProperty CurrentVerticalOffsetProperty =
-        DependencyProperty.Register("CurrentVerticalOffset", typeof(double), typeof(ScrollViewer), new PropertyMetadata(0.0, OnCurrentVerticalOffsetChanged));
+    public bool IsHorizontal
+    {
+        get => (bool)GetValue(IsHorizontalProperty);
+        set => SetValue(IsHorizontalProperty, value);
+    }
+    public static readonly DependencyProperty IsHorizontalProperty =
+        DependencyProperty.Register(nameof(IsHorizontal), typeof(bool), typeof(ScrollViewer), new PropertyMetadata(false));
 
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
+        double scrollableSize = IsHorizontal switch
+        {
+            true => ScrollableWidth,
+            _ => ScrollableHeight,
+        };
+
+        if (scrollableSize == 0.0)
+            return;
+
         e.Handled = true;
+
+        double offset = IsHorizontal switch
+        {
+            true => HorizontalOffset,
+            _ => VerticalOffset,
+        };
+
 
         if (!_isScrolling)
         {
-            _totalVerticalOffset = VerticalOffset;
-            CurrentVerticalOffset = VerticalOffset;
+            _totalOffset = offset;
+            CurrentOffset = offset;
         }
 
-        double x = _totalVerticalOffset - (e.Delta / 2);
-        _totalVerticalOffset = Math.Min(Math.Max(0, x), ScrollableHeight);
-        AnimateVerticalScrolling(_totalVerticalOffset);
+        double y = _totalOffset - (e.Delta / 2.0);
+        _totalOffset = Math.Min(Math.Max(0, y), scrollableSize);
+        AnimateScrolling(_totalOffset);
     }
 
-    private static void OnCurrentVerticalOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnCurrentOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is ScrollViewer sv && e.NewValue is double value)
+        if (d is not SmoothScrollViewer sv || e.NewValue is not double value)
+            return;
+
+        if (sv.IsHorizontal)
+            sv.ScrollToHorizontalOffset(value);
+        else
             sv.ScrollToVerticalOffset(value);
     }
 
-    private void AnimateVerticalScrolling(double offset, double duration = 200)
+    private void AnimateScrolling(double offset, double duration = 200)
     {
-        _verticalOffsetQueue.Enqueue(offset);
+        _offsetQueue.Enqueue(offset);
         var animation = new DoubleAnimation(offset, TimeSpan.FromMilliseconds(duration))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
@@ -54,7 +81,7 @@ public class SmoothScrollViewer : ScrollViewer
         animation.Completed += OnAnimationCompleted;
         _isScrolling = true;
 
-        BeginAnimation(CurrentVerticalOffsetProperty, animation, HandoffBehavior.Compose);
+        BeginAnimation(CurrentOffsetProperty, animation, HandoffBehavior.Compose);
     }
 
     private void OnAnimationCompleted(object sender, EventArgs e)
@@ -62,7 +89,7 @@ public class SmoothScrollViewer : ScrollViewer
         if (sender is Timeline tl)
             tl.Completed -= OnAnimationCompleted;
 
-        CurrentVerticalOffset = _verticalOffsetQueue.Dequeue();
+        CurrentOffset = _offsetQueue.Dequeue();
         _isScrolling = false;
     }
 }

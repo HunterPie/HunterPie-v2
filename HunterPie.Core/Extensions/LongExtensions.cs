@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace HunterPie.Core.Extensions;
 
@@ -20,5 +21,5 @@ public static class LongExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsNullPointer(this long value) => value == 0;
+    public static bool IsNullPointer(this nint value) => value == IntPtr.Zero;
 }

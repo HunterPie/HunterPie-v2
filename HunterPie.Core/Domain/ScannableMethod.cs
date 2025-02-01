@@ -9,9 +9,9 @@ namespace HunterPie.Core.Domain;
 public class ScannableMethod : Attribute
 {
 
-    public readonly Type DtoType;
+    public readonly Type? DtoType;
 
-    public ScannableMethod(Type dtoType = null)
+    public ScannableMethod(Type? dtoType = null)
     {
         DtoType = dtoType;
     }

@@ -1,5 +1,6 @@
 ﻿using HunterPie.Core.Architecture;
 using HunterPie.Core.Extensions;
+using HunterPie.Core.Scan.Service;
 using HunterPie.UI.Architecture.Graphs;
 using LiveCharts;
 using LiveCharts.Defaults;
@@ -65,8 +66,13 @@ public class TelemetricsViewModel : Bindable
     public Func<double, string> PercentageFormatter { get; } =
         new Func<double, string>((value) => $"{value:0.0}%");
 
-    public TelemetricsViewModel()
+    public Observable<long> ScanTime { get; }
+
+    public TelemetricsViewModel(
+        IScanService scanService
+    )
     {
+        ScanTime = scanService.ElapsedTime;
         // TODO: Make the graphs easier to code
         CPUSeries = new LinearSeriesCollectionBuilder()
             .AddSeries(CPUPoints, "CPU", Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF))
