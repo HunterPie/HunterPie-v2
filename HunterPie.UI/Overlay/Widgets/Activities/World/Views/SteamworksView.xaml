@@ -1,0 +1,59 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.World.Views.SteamworksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.World.ViewModels"
+             xmlns:image="clr-namespace:HunterPie.UI.Controls.Image"
+             xmlns:progress="clr-namespace:HunterPie.UI.Controls.Progress"
+             mc:Ignorable="d" 
+             d:DesignHeight="150" 
+             d:DesignWidth="30"
+             d:DataContext="{d:DesignInstance viewModels:SteamworksViewModel}">
+    <UserControl.Resources>
+        <converters:CurrentValueToWidthConverter x:Key="CurrentValueToWidthConverter"/>
+        <converters:IntToKFormat x:Key="IntToKFormatter"/>
+    </UserControl.Resources>
+    <Border BorderBrush="{StaticResource GRAY}"
+            Background="{StaticResource GRAY_200}"
+            BorderThickness="1"
+            CornerRadius="0,5,5,0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Icon -->
+            <image:Icon Grid.Row="0"
+                        Image="{StaticResource ICON_STEAMWORKS}"
+                        Foreground="{StaticResource WHITE_700}"
+                        Margin="0,2"/>
+
+            <!-- Gauge -->
+            <progress:Gauge Grid.Row="1"
+                            Background="{StaticResource GRAY_300}"
+                            BorderBrush="{StaticResource GRAY}"
+                            Foreground="{StaticResource YELLOW}"
+                            Width="10"
+                            Orientation="Vertical"
+                            Current="{Binding NaturalFuel, Mode=OneWay}"
+                            Max="{Binding MaxNaturalFuel, Mode=OneWay}"
+                            Margin="5"/>
+
+            <StackPanel Grid.Row="2">
+                <TextBlock d:Text="500"
+                           Text="{Binding NaturalFuel, Mode=OneWay}"
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource WHITE_100}"/>
+                <TextBlock d:Text="17.2k"
+                           FontSize="10"
+                           Text="{Binding StoredFuel, Mode=OneWay, Converter={StaticResource IntToKFormatter}}"
+                           HorizontalAlignment="Center"
+                           Foreground="{StaticResource WHITE_300}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

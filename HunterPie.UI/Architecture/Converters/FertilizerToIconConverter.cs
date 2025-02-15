@@ -9,10 +9,10 @@ namespace HunterPie.UI.Architecture.Converters;
 #nullable enable
 public class FertilizerToIconConverter : IValueConverter
 {
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is not Fertilizer fertilizer)
-            throw new ArgumentException("value must be a Fertilizer");
+            return null;
 
         string? iconName = fertilizer switch
         {
@@ -28,7 +28,9 @@ public class FertilizerToIconConverter : IValueConverter
             _ => null
         };
 
-        return iconName is null ? "" : Resources.Icon(iconName);
+        return iconName is null
+            ? null
+            : Resources.Icon(iconName);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();

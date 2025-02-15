@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.Rise.Views.CohootNestsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.ViewModels"
+             xmlns:image="clr-namespace:HunterPie.UI.Controls.Image"
+             xmlns:views="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="40" 
+             d:DesignWidth="240"
+             d:DataContext="{d:DesignInstance viewModels:CohootNestsViewModel}">
+    <Border Background="{StaticResource GRAY_200}"
+            BorderBrush="{StaticResource GRAY}"
+            BorderThickness="1,0,1,1"
+            CornerRadius="0,0,7,7">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <image:Icon Grid.Column="0"
+                        Foreground="{StaticResource WHITE_200}"
+                        Image="{StaticResource ICON_COHOOT}"
+                        Margin="5"/>
+
+            <ItemsControl Grid.Column="1"
+                          d:ItemsSource="{d:SampleData ItemCount=2}"
+                          ItemsSource="{Binding Nests, Mode=OneTime}"
+                          HorizontalAlignment="Right">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type viewModels:CohootNestViewModel}">
+                        <views:CohootNestView Margin="2"
+                                              Width="90"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</UserControl>

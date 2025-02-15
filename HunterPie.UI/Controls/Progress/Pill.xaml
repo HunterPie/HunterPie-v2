@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="HunterPie.UI.Controls.Progress.Pill"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:local="clr-namespace:HunterPie.UI.Controls.Progress"
+           xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters"
+           mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:RelativeSizeConverter x:Key="RelativeSizeConverter"/>
+    </UserControl.Resources>
+    <Rectangle Stroke="{Binding BorderBrush, Mode=OneWay}"
+               d:Stroke="{StaticResource GRAY}"
+               RadiusY="{Binding ActualWidth, RelativeSource={RelativeSource Self}, Converter={StaticResource RelativeSizeConverter}, ConverterParameter=0.5}"
+               RadiusX="{Binding RadiusY, RelativeSource={RelativeSource Self}}"
+               StrokeThickness="1"
+               DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Pill}}}">
+        <Rectangle.Style>
+            <Style TargetType="Rectangle">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsActive, Mode=OneWay}"
+                                 Value="True">
+                        <Setter Property="Fill" Value="{Binding Foreground, Mode=OneWay}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive, Mode=OneWay}"
+                                 Value="False">
+                        <Setter Property="Fill" Value="{StaticResource GRAY_300}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Rectangle.Style>
+    </Rectangle>
+</UserControl>

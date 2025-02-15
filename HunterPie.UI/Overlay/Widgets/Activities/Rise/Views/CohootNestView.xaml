@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.Rise.Views.CohootNestView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.Views"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.ViewModels"
+             xmlns:progress="clr-namespace:HunterPie.UI.Controls.Progress"
+             mc:Ignorable="d" 
+             d:DesignHeight="40" 
+             d:DesignWidth="100"
+             d:DataContext="{d:DesignInstance viewModels:CohootNestViewModel}">
+    <Border Background="{StaticResource GRAY_50}"
+            CornerRadius="5">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Name -->
+            <TextBlock Grid.Row="0"
+                       Text="{Binding Name, Mode=OneWay}"
+                       d:Text="Kamura"
+                       HorizontalAlignment="Center"
+                       FontSize="14"
+                       Foreground="{StaticResource WHITE_200}"/>
+
+            <!-- Items -->
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding Items, Mode=OneTime}"
+                          d:ItemsSource="{d:SampleData ItemCount=5}"
+                          HorizontalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"
+                                    IsItemsHost="True"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type viewModels:CohootItemViewModel}">
+                        <progress:Pill Margin="2,1"
+                                       Width="10"
+                                       BorderBrush="{StaticResource GRAY}"
+                                       Foreground="{StaticResource Violet}"
+                                       IsActive="{Binding IsActive, Mode=OneWay}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.World.Views.HarvestBoxView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.World.ViewModels"
+             xmlns:views="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.World.Views"
+             mc:Ignorable="d"  
+             d:DesignWidth="200"
+             d:DataContext="{d:DesignInstance viewModels:HarvestBoxViewModel}">
+    <UserControl.Resources>
+        <converters:FertilizerToVisibilityConverter x:Key="FertilizerToVisibilityConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <StackPanel>
+            <ItemsControl ItemsSource="{Binding Fertilizers, Mode=OneWay}"
+                          d:ItemsSource="{d:SampleData ItemCount=4}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel IsItemsHost="True"
+                                    Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <views:HarvestFertilizerView Height="35"
+                                                     Width="230"
+                                                     d:Visibility="Visible"
+                                                     Visibility="{Binding Fertilizer, Mode=OneWay, Converter={StaticResource FertilizerToVisibilityConverter}}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border Background="{StaticResource GRAY_200}"
+                    BorderBrush="{StaticResource GRAY}"
+                    BorderThickness="1"
+                    CornerRadius="0,0,5,5"
+                    Padding="2">
+                <TextBlock VerticalAlignment="Center"
+                           HorizontalAlignment="Stretch"
+                           TextAlignment="Center"
+                           FontSize="14">
+                    <Run Text="{Binding Count, Mode=OneWay}"
+                         d:Text="20"
+                         Foreground="{StaticResource WHITE_100}"/><!--
+                 --><Run Text="{Binding MaxCount, Mode=OneWay, StringFormat='/{0}'}"
+                         Foreground="{StaticResource WHITE_500}"
+                         d:Text="/50"/>
+                </TextBlock>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,37 +1,27 @@
-﻿using HunterPie.Core.Game.Entity.Environment;
-using HunterPie.Core.Game.Enums;
+﻿using HunterPie.UI.Overlay.Widgets.Activities.Common;
+using HunterPie.UI.Overlay.Widgets.Activities.Rise.ViewModels;
+using HunterPie.UI.Overlay.Widgets.Activities.World.ViewModels;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace HunterPie.UI.Overlay.Widgets.Activities.Presentation;
 
+#nullable enable
 public class ActivityTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate SubmarineTemplate { get; set; }
-    public DataTemplate TrainingDojoTemplate { get; set; }
-    public DataTemplate MeowcenariesTemplate { get; set; }
-    public DataTemplate CohootTemplate { get; set; }
-    public DataTemplate HarvestBoxTemplate { get; set; }
-    public DataTemplate SteamworksTemplate { get; set; }
-    public DataTemplate ArgosyTemplate { get; set; }
-    public DataTemplate TailraidersTemplate { get; set; }
+    public required DataTemplate MonsterHunterWorldTemplate { get; init; }
+    public required DataTemplate MonsterHunterRiseTemplate { get; init; }
 
-    public override DataTemplate SelectTemplate(object item, DependencyObject container)
+    public override DataTemplate? SelectTemplate(object? item, DependencyObject container)
     {
-        return item is IActivity activity
-            ? activity.Type switch
+        return item is IActivitiesViewModel viewModel
+            ? viewModel switch
             {
-                ActivityType.HarvestBox => HarvestBoxTemplate,
-                ActivityType.Argosy => ArgosyTemplate,
-                ActivityType.Submarine => SubmarineTemplate,
-                ActivityType.Meowcenaries => MeowcenariesTemplate,
-                ActivityType.TrainingDojo => TrainingDojoTemplate,
-                ActivityType.Cohoot => CohootTemplate,
-                ActivityType.Steamworks => SteamworksTemplate,
-                ActivityType.Tailraiders => TailraidersTemplate,
-                _ => throw new NotImplementedException($"Missing implementation for {nameof(activity.Type)}")
+                MHWorldActivitiesViewModel => MonsterHunterWorldTemplate,
+                MHRiseActivitiesViewModel => MonsterHunterRiseTemplate,
+                _ => throw new ArgumentOutOfRangeException(nameof(viewModel))
             }
-            : throw new ArgumentException($"item must be an {nameof(IActivity)}");
+            : null;
     }
 }

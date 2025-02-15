@@ -2,6 +2,7 @@
 using HunterPie.Core.Client.Localization;
 using HunterPie.Core.Remote;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -41,8 +42,14 @@ public class LocalizationString : MarkupExtension
         LocalizationId = localizationId;
     }
 
-    public override object ProvideValue(IServiceProvider serviceProvider) =>
-        Localization.QueryString(LocalizationId);
+    public override object ProvideValue(IServiceProvider serviceProvider)
+    {
+        if (DesignerProperties.GetIsInDesignMode(new()))
+            return "String";
+
+        return Localization.QueryString(LocalizationId);
+    }
+
 }
 
 [MarkupExtensionReturnType(typeof(string))]
@@ -55,6 +62,11 @@ public class LocalizationDescription : MarkupExtension
         LocalizationId = localizationId;
     }
 
-    public override object ProvideValue(IServiceProvider serviceProvider) =>
-        Localization.QueryDescription(LocalizationId);
+    public override object ProvideValue(IServiceProvider serviceProvider)
+    {
+        if (DesignerProperties.GetIsInDesignMode(new()))
+            return "Description";
+
+        return Localization.QueryDescription(LocalizationId);
+    }
 }

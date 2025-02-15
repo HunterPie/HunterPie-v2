@@ -1,4 +1,5 @@
 ﻿using HunterPie.Core.Client.Localization;
+using HunterPie.DI;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Environment.Activities.Enums;
 using System;
 using System.Globalization;
@@ -6,14 +7,18 @@ using System.Windows.Data;
 
 namespace HunterPie.UI.Architecture.Converters;
 
+#nullable enable
 public class FertilizerToNameConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    private static ILocalizationRepository LocalizationRepository =>
+        DependencyContainer.Get<ILocalizationRepository>();
+
+    public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is not Fertilizer fertilizer)
-            throw new ArgumentException("value must be a Fertilizer");
+            return null;
 
-        string localizationId = fertilizer switch
+        string? localizationId = fertilizer switch
         {
             Fertilizer.None => "FERTILIZER_NONE_STRING",
             Fertilizer.PlantS => "FERTILIZER_PLANT_S_STRING",
@@ -24,10 +29,14 @@ public class FertilizerToNameConverter : IValueConverter
             Fertilizer.HoneyL => "FERTILIZER_HONEY_L_STRING",
             Fertilizer.GrowthS => "FERTILIZER_GROWTH_S_STRING",
             Fertilizer.GrowthL => "FERTILIZER_GROWTH_L_STRING",
-            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
+            _ => null
         };
 
-        return Localization.QueryString($"//Strings/Fertilizers/Fertilizer[@Id='{localizationId}']");
+        return localizationId switch
+        {
+            { } => LocalizationRepository.FindStringBy($"//Strings/Fertilizers/Fertilizer[@Id='{localizationId}']"),
+            _ => null
+        };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();

@@ -59,6 +59,12 @@
     <Compile Update="Controls\Popup\SearchPopup.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Controls\Progress\Gauge.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\Progress\Pill.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Controls\Settings\Abnormality\Views\AbnormalityElementView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -116,40 +122,52 @@
     <Compile Update="Overlay\Widgets\Abnormality\View\AbnormalityBarView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\ActivitiesView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\CohootNestView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\ArgosyView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\MHRiseActivitiesView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\BuddyDojoView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\Views\ActivitiesView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\CohootNestView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\World\Views\ArgosyView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\HarvestBoxView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\BuddyDojoView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\HarvestFertilizerView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\CohootNestsView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\MeowcenariesView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\World\Views\FertilizerDayView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\SteamFuelView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\World\Views\HarvestBoxView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\SubmarinesView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\World\Views\HarvestFertilizerView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\SubmarineView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\MeowcenariesView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\TailraidersView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\World\Views\MHWorldActivitiesView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Overlay\Widgets\Activities\View\TrainingDojoView.xaml.cs">
+    <Compile Update="Overlay\Widgets\Activities\World\Views\SteamworksView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\SubmarinesView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\SubmarineView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Overlay\Widgets\Activities\World\Views\TailraidersView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Overlay\Widgets\Activities\Rise\Views\TrainingDojoView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Overlay\Widgets\Chat\Views\ChatStringView.xaml.cs">
@@ -334,6 +352,12 @@
     <Page Update="Controls\Popup\SearchPopup.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Controls\Progress\Gauge.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\Progress\Pill.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Controls\Settings\Abnormality\Views\AbnormalityElementView.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -391,40 +415,52 @@
     <Page Update="Overlay\Widgets\Abnormality\View\AbnormalityBarView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\ActivitiesView.xaml">
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\CohootNestView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\ArgosyView.xaml">
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\MHRiseActivitiesView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\BuddyDojoView.xaml">
+    <Page Update="Overlay\Widgets\Activities\Views\ActivitiesView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\CohootNestView.xaml">
+    <Page Update="Overlay\Widgets\Activities\World\Views\ArgosyView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\HarvestBoxView.xaml">
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\BuddyDojoView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\HarvestFertilizerView.xaml">
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\CohootNestsView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\MeowcenariesView.xaml">
+    <Page Update="Overlay\Widgets\Activities\World\Views\FertilizerDayView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\SteamFuelView.xaml">
+    <Page Update="Overlay\Widgets\Activities\World\Views\HarvestBoxView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\SubmarinesView.xaml">
+    <Page Update="Overlay\Widgets\Activities\World\Views\HarvestFertilizerView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\SubmarineView.xaml">
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\MeowcenariesView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\TailraidersView.xaml">
+    <Page Update="Overlay\Widgets\Activities\World\Views\MHWorldActivitiesView.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Overlay\Widgets\Activities\View\TrainingDojoView.xaml">
+    <Page Update="Overlay\Widgets\Activities\World\Views\SteamworksView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\SubmarinesView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\SubmarineView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Overlay\Widgets\Activities\World\Views\TailraidersView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Overlay\Widgets\Activities\Rise\Views\TrainingDojoView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Overlay\Widgets\Chat\Views\ChatStringView.xaml">

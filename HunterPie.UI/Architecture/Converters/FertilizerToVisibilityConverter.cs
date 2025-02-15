@@ -11,7 +11,7 @@ public class FertilizerToVisibilityConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is not Fertilizer fertilizer)
-            throw new ArgumentException($"value must be of type {typeof(Fertilizer)} but was {value?.GetType()}");
+            return Visibility.Collapsed;
 
         return fertilizer switch
         {

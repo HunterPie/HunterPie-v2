@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.World.Views.FertilizerDayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.World.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="16" 
+             d:DesignWidth="10"
+             d:DataContext="{d:DesignInstance viewModels:FertilizerDayViewModel}">
+    <Rectangle Stroke="{StaticResource GRAY}"
+               d:Fill="{StaticResource GREEN}"
+               RadiusX="5"
+               RadiusY="5"
+               StrokeThickness="1">
+        <Rectangle.Style>
+            <Style TargetType="Rectangle">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsActive, Mode=OneWay}"
+                                 Value="True">
+                        <Setter Property="Fill" Value="{StaticResource GREEN}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive, Mode=OneWay}"
+                                 Value="False">
+                        <Setter Property="Fill" Value="{StaticResource GRAY_300}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Rectangle.Style>
+    </Rectangle>
+</UserControl>

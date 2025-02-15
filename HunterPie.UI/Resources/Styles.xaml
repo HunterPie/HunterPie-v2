@@ -6,13 +6,13 @@
                     xmlns:monster="clr-namespace:HunterPie.UI.Overlay.Widgets.Monster.Views;assembly=HunterPie.UI"
                     xmlns:meter="clr-namespace:HunterPie.UI.Overlay.Widgets.Damage.View;assembly=HunterPie.UI"
                     xmlns:abnormalities="clr-namespace:HunterPie.UI.Overlay.Widgets.Abnormality.View;assembly=HunterPie.UI"
-                    xmlns:activities="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.View;assembly=HunterPie.UI"
                     xmlns:chat="clr-namespace:HunterPie.UI.Overlay.Widgets.Chat.Views;assembly=HunterPie.UI"
                     xmlns:wirebug="clr-namespace:HunterPie.UI.Overlay.Widgets.Wirebug.Views;assembly=HunterPie.UI"
                     xmlns:specialized="clr-namespace:HunterPie.UI.Overlay.Widgets.SpecializedTools.Views;assembly=HunterPie.UI"
                     xmlns:playerHud="clr-namespace:HunterPie.UI.Overlay.Widgets.Player.Views;assembly=HunterPie.UI"
                     xmlns:effects="clr-namespace:HunterPie.UI.Controls.Effects;assembly=HunterPie.UI"
-                    xmlns:progress="clr-namespace:HunterPie.UI.Overlay.Controls.Progress;assembly=HunterPie.UI">
+                    xmlns:progress="clr-namespace:HunterPie.UI.Overlay.Controls.Progress;assembly=HunterPie.UI"
+                    xmlns:activities="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Views;assembly=HunterPie.UI">
     <!-- Converters -->
     <converters:EnumToStringConverter x:Key="EnumToStringConverter"/>
     

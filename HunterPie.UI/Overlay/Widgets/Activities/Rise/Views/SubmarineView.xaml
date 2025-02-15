@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.Rise.Views.SubmarineView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.ViewModels"
+             xmlns:image="clr-namespace:HunterPie.UI.Controls.Image"
+             xmlns:progress="clr-namespace:HunterPie.UI.Controls.Progress"
+             xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters"
+             xmlns:arithmetics="clr-namespace:HunterPie.UI.Architecture.Converters.Arithmetics"
+             xmlns:aggregation="clr-namespace:HunterPie.UI.Architecture.Converters.Aggregation"
+             d:DataContext="{d:DesignInstance Type=viewModels:SubmarineViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="35" 
+             d:DesignWidth="200">
+    <UserControl.Resources>
+        <converters:RatioConverter x:Key="RatioConverter"/>
+        
+        <aggregation:MultiToSingleValueConverterPipeline x:Key="PercentageConverter"
+                                                         Entrypoint="{StaticResource RatioConverter}">
+            <arithmetics:MultiplyNumberConverter Factor="100"/>
+        </aggregation:MultiToSingleValueConverterPipeline>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="35"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <image:Icon Grid.Column="0" 
+                    Image="{StaticResource ICON_SUBMARINE}"
+                    Foreground="{StaticResource WHITE_200}"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
+                    Margin="5"/>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="4*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
+
+            <progress:Gauge Grid.Row="0"
+                            Grid.Column="0"
+                            Foreground="{StaticResource GREEN}"
+                            Background="{StaticResource GRAY_200}"
+                            BorderBrush="{StaticResource GRAY}"
+                            Height="6"
+                            CornerRadius="3"
+                            Current="{Binding Count, Mode=OneWay}"
+                            Max="{Binding MaxCount, Mode=OneWay}"
+                            Margin="1.7,0,2,0"/>
+
+            <TextBlock Grid.Column="1"
+                       Grid.Row="0"
+                       Grid.RowSpan="2"
+                       Foreground="{StaticResource WHITE_500}"
+                       FontSize="10"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center">
+                <Run d:Text="70"
+                     Foreground="{StaticResource WHITE_200}"
+                     FontSize="13"
+                     FontWeight="Medium">
+                    <Run.Text>
+                        <MultiBinding Converter="{StaticResource PercentageConverter}" StringFormat="0">
+                            <Binding Path="Count" Mode="OneWay"/>
+                            <Binding Path="MaxCount" Mode="OneWay"/>
+                        </MultiBinding>
+                    </Run.Text>
+                </Run>%
+            </TextBlock>
+
+            <ItemsControl Grid.Row="1"
+                          Grid.Column="0"
+                          d:ItemsSource="{d:SampleData ItemCount=9}"
+                          ItemsSource="{Binding Boosts, Mode=OneTime}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel IsItemsHost="True"
+                                    Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <progress:Pill Width="11"
+                                       d:Foreground="{StaticResource YELLOW}"
+                                       BorderBrush="{StaticResource GRAY}"
+                                       Margin="1.7, 2"
+                                       IsActive="{Binding IsActive, Mode=OneWay}">
+                            <progress:Pill.Style>
+                                <Style TargetType="progress:Pill">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsExtraBoost, Mode=OneWay}"
+                                                     Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource ORANGE}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsExtraBoost, Mode=OneWay}"
+                                                     Value="False">
+                                            <Setter Property="Foreground" Value="{StaticResource YELLOW}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </progress:Pill.Style>
+                        </progress:Pill>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Grid>
+</UserControl>

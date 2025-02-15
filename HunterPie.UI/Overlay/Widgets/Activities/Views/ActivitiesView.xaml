@@ -1,0 +1,34 @@
+﻿<arch:View x:Class="HunterPie.UI.Overlay.Widgets.Activities.Views.ActivitiesView"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:arch="clr-namespace:HunterPie.UI.Architecture"
+           xmlns:presentation="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Presentation"
+           xmlns:vm="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.ViewModels"
+           xmlns:views="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.World.Views"
+           xmlns:viewsMHR="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.Views"
+           x:TypeArguments="vm:ActivitiesViewModel"
+           mc:Ignorable="d"
+           Style="{StaticResource STYLE_ACTIVITIES_WIDGET}"
+           d:DataContext="{d:DesignInstance vm:ActivitiesViewModel}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <DataTemplate x:Key="MonsterHunterWorldActivitiesTemplate">
+            <views:MHWorldActivitiesView/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="MonsterHunterRiseActivitiesTemplate">
+            <viewsMHR:MHRiseActivitiesView/>
+        </DataTemplate>
+
+        <presentation:ActivityTemplateSelector x:Key="ActivityTemplateSelector"
+                                               MonsterHunterWorldTemplate="{StaticResource MonsterHunterWorldActivitiesTemplate}"
+                                               MonsterHunterRiseTemplate="{StaticResource MonsterHunterRiseActivitiesTemplate}"/>
+    </UserControl.Resources>
+
+    <ContentControl ContentTemplateSelector="{StaticResource ActivityTemplateSelector}"
+                    Content="{Binding Activities, Mode=OneWay}"
+                    Visibility="{Binding InVisibleStage, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
+</arch:View>

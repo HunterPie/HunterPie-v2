@@ -1,0 +1,215 @@
+﻿<UserControl x:Class="HunterPie.UI.Overlay.Widgets.Activities.Rise.Views.TrainingDojoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:button="clr-namespace:HunterPie.UI.Controls.Buttons"
+             xmlns:converters="clr-namespace:HunterPie.UI.Architecture.Converters"
+             xmlns:loc="clr-namespace:HunterPie.UI.Architecture.Assets"
+             xmlns:viewModels="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.ViewModels"
+             xmlns:views="clr-namespace:HunterPie.UI.Overlay.Widgets.Activities.Rise.Views"
+             d:DataContext="{d:DesignInstance Type=viewModels:TrainingDojoViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="40"
+             d:DesignWidth="270"
+             ClipToBounds="True">
+    <UserControl.Resources>
+        <converters:CurrentValueToWidthConverter x:Key="CurrentValueToWidthConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="30"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.RowSpan="2"
+              Grid.ColumnSpan="2"
+              HorizontalAlignment="Left"
+              d:Width="40"
+              MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Grid}}}"
+              Margin="1"
+              ClipToBounds="True">
+            <Grid.Width>
+                <MultiBinding Converter="{StaticResource CurrentValueToWidthConverter}">
+                    <Binding Path="DataContext.Rounds" RelativeSource="{RelativeSource AncestorType=views:TrainingDojoView}" FallbackValue="0"/>
+                    <Binding Path="DataContext.MaxRounds" RelativeSource="{RelativeSource AncestorType=views:TrainingDojoView}" FallbackValue="1"/>
+                    <Binding Path="MaxWidth" RelativeSource="{RelativeSource Self}"/>
+                    <Binding Path="Margin" RelativeSource="{RelativeSource Self}"/>
+                </MultiBinding>
+            </Grid.Width>
+            <Rectangle>
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="1,0.5" StartPoint="0.5,1">
+                        <GradientStop Color="#33CF3900" Offset="0"/>
+                        <GradientStop Color="#33FFA400" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle Fill="#10FFFFFF" 
+                       Width="30" 
+                       RenderTransformOrigin="0.5,0.5"
+                       HorizontalAlignment="Left" 
+                       Margin="0,0,0,0">
+                <Rectangle.Effect>
+                    <BlurEffect Radius="20" 
+                                KernelType="Gaussian"/>
+                </Rectangle.Effect>
+                <Rectangle.Style>
+                    <Style TargetType="Rectangle">
+                        <Style.Triggers>
+                            <Trigger Property="IsVisible"
+                                     Value="True">
+                                <Trigger.EnterActions>
+
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever"
+                                                    Storyboard.TargetProperty="Margin">
+                                            <ThicknessAnimation From="-40,0,0,0"
+                                                                To="300,0,0,0"
+                                                                Duration="0:0:3"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
+        </Grid>
+        <StackPanel>
+            <Grid Height="40">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShouldShowBuddies, RelativeSource={RelativeSource AncestorType=views:TrainingDojoView}}"
+                                         Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ThicknessAnimation Storyboard.TargetProperty="Margin"
+                                                                To="0,-40,0,0"
+                                                                Duration="0:0:0.250"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ThicknessAnimation Storyboard.TargetProperty="Margin"
+                                                                To="0,0,0,0"
+                                                                Duration="0:0:0.250"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Rectangle Margin="3"
+                           Grid.RowSpan="2" 
+                           Grid.Column="0"
+                           Fill="WhiteSmoke"
+                           Opacity="0.7">
+                    <Rectangle.OpacityMask>
+                        <ImageBrush ImageSource="{StaticResource ICON_DOJO}" 
+                                    Stretch="Uniform"/>
+                    </Rectangle.OpacityMask>
+                    <Rectangle.Effect>
+                        <DropShadowEffect BlurRadius="5"
+                                              Color="Black"
+                                              ShadowDepth="0"/>
+                    </Rectangle.Effect>
+                </Rectangle>
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,0,-16,0" 
+                            Grid.Row="0" 
+                            Grid.Column="1">
+                    <Image Source="{StaticResource ICON_BOOST}"
+                           Height="15"
+                           Width="15"
+                           Margin="3,0,0,0" Opacity="0.5"/>
+                    <TextBlock FontSize="15"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource WHITE_100}">
+                        <Run d:Text="Boosts:"
+                             Text="{loc:LocalizationString '//Strings/Client/Overlay/String[@Id=&quot;TRAINING_DOJO_BOOSTS_STRING&quot;]'}"
+                             FontWeight="Medium"/>
+                        <Run Text="{Binding Boosts, Mode=OneWay}"
+                             d:Text="9"
+                             FontWeight="Medium"/><!--
+                     --><Run Text="/"
+                             Foreground="{StaticResource WHITE_600}"/><!--
+                     --><Run Text="{Binding MaxBoosts, Mode=OneWay}"
+                             d:Text="10"
+                             Foreground="{StaticResource WHITE_600}"/>
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="5"
+                                              Color="Black"
+                                              ShadowDepth="0"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" 
+                            Grid.Row="1" 
+                            Grid.Column="1">
+                    <Image Source="{StaticResource ICON_TRAINING}" Opacity="0.5"/>
+                    <TextBlock Foreground="{StaticResource WHITE_100}"
+                               FontSize="15"
+                               VerticalAlignment="Center">
+                        <Run d:Text="Rounds:"
+                             Text="{loc:LocalizationString '//Strings/Client/Overlay/String[@Id=&quot;TRAINING_DOJO_ROUNDS_STRING&quot;]'}"
+                             FontWeight="Medium"/>
+                        <Run Text="{Binding Rounds}"
+                             d:Text="9"
+                             FontWeight="Medium"/><!--
+                     --><Run Text="/"
+                             Foreground="{StaticResource WHITE_600}"/><!--
+                     --><Run Text="{Binding MaxRounds}"
+                             Foreground="{StaticResource WHITE_600}"
+                             d:Text="10"/>
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="5"
+                                              Color="Black"
+                                              ShadowDepth="0"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+
+            <ItemsControl ItemsSource="{Binding Buddies}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Height="40"
+                                    Orientation="Horizontal"
+                                    IsItemsHost="True"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <views:BuddyDojoView/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+
+        <button:Button HorizontalAlignment="Stretch"
+                       Grid.Column="2"
+                       Grid.RowSpan="2"
+                       OnClick="OnClick"
+                       Height="{Binding ActualWidth, RelativeSource={RelativeSource Self}}">
+            <Image Source="{StaticResource ICON_STATISTICS}"
+                   Margin="2"/>
+        </button:Button>
+    </Grid>
+</UserControl>

@@ -136,6 +136,9 @@
     <SolidColorBrush x:Key="YELLOW_600">#62420e</SolidColorBrush>
     <SolidColorBrush x:Key="YELLOW_700">#4a320a</SolidColorBrush>
     
+    <!-- Orange -->
+    <SolidColorBrush x:Key="ORANGE">#EC5D1C</SolidColorBrush>
+
     <!-- Blue -->
     <SolidColorBrush x:Key="BLUE_LIGHT_700">#b3d4fa</SolidColorBrush>
     <SolidColorBrush x:Key="BLUE_LIGHT_600">#99c5f8</SolidColorBrush>
@@ -154,6 +157,10 @@
     <SolidColorBrush x:Key="BLUE_500">#003877</SolidColorBrush>
     <SolidColorBrush x:Key="BLUE_600">#002c5f</SolidColorBrush>
     <SolidColorBrush x:Key="BLUE_700">#002147</SolidColorBrush>
+
+    <!-- Violet -->
+    <SolidColorBrush x:Key="Violet">#8E51FF</SolidColorBrush>
+    <SolidColorBrush x:Key="Violet50">#874DF2</SolidColorBrush>
 
     <!-- Player Hud -->
     <LinearGradientBrush x:Key="WIDGET_PLAYER_HEALTH_FOREGROUND" EndPoint="1,1" StartPoint="0,1">

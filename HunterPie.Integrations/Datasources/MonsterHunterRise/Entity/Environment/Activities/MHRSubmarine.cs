@@ -39,6 +39,8 @@ public class MHRSubmarine : IEventDispatcher, IUpdatable<MHRSubmarineData>, IDis
         }
     }
 
+    public readonly int MaxDays = 9;
+
     public bool IsUnlocked
     {
         get => _isUnlocked;

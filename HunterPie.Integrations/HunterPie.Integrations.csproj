@@ -4,8 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>2.12.0.213</AssemblyVersion>
-    <FileVersion>2.12.0.213</FileVersion>
+    <AssemblyVersion>2.12.0.218</AssemblyVersion>
+    <FileVersion>2.12.0.218</FileVersion>
 	<Authors>Haato</Authors>
 	<Description></Description>
     <Version>2.12.0.0</Version>

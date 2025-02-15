@@ -5,14 +5,14 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <Configurations>Debug;Release;Deploy</Configurations>
-    <AssemblyVersion>2.12.0.432</AssemblyVersion>
-    <FileVersion>2.12.0.432</FileVersion>
+    <AssemblyVersion>2.12.0.443</AssemblyVersion>
+    <FileVersion>2.12.0.443</FileVersion>
     <LangVersion>11.0</LangVersion>
     <Authors>Haato</Authors>
     <Version>2.12.0.0</Version>
  </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <None Remove="Architecture\Shaders\noise.ps" />
     <None Remove="Assets\Textures\alligator_noise_512x512.jpg" />
   </ItemGroup>
@@ -674,6 +674,7 @@
     <Folder Include="Controls\Paginating\Events\" />
     <Folder Include="Controls\Settings\Abnormality\Builders\" />
     <Folder Include="Overlay\Controls\Progress\" />
+    <Folder Include="Overlay\Widgets\Activities\World\Mocks\" />
     <Folder Include="Overlay\Widgets\Monster\Adapters\" />
     <Folder Include="Properties\" />
     <Folder Include="Settings\Converter\Model\" />
